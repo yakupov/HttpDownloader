@@ -91,9 +91,11 @@ public class DownloadableFilePart implements IDownloadableFilePart {
             case SUSPENDED:
             case PAUSED:
                 resume = true;
+                logger.trace("File part downloader awakened: " + getOutputFile().toString());
             case PENDING:
                 status = DOWNLOADING;
                 download(resume);
+                return;
             case DOWNLOADING:
                 return;
             default:
@@ -114,8 +116,8 @@ public class DownloadableFilePart implements IDownloadableFilePart {
             httpRequest.setConfig(headRequestConfig);
             logger.trace("Executing request " + httpRequest.getURI());
             final HttpResponse response = httpClient.execute(httpRequest);
-            logger.trace("HTTP response code: " + response.getStatusLine().getStatusCode());
-            logger.trace("HTTP response reason: " + response.getStatusLine().getReasonPhrase());
+            logger.trace("HTTP response code: " + response.getStatusLine().getStatusCode() +
+                    ", reason = " + response.getStatusLine().getReasonPhrase());
 
             if (response.getEntity() != null) {
                 //TODO: check that RC=206
@@ -124,9 +126,8 @@ public class DownloadableFilePart implements IDownloadableFilePart {
                     length = response.getEntity().getContentLength();
                 }
 
-
-                try (OutputStream outputFileStream = new FileOutputStream(outputFile, resume);
-                     final InputStream inputStream = response.getEntity().getContent()) {
+                final InputStream inputStream = response.getEntity().getContent();
+                try (OutputStream outputFileStream = new FileOutputStream(outputFile, resume)) {
 
                     final byte[] buffer = new byte[4096];
                     int lastRead;
@@ -150,11 +151,14 @@ public class DownloadableFilePart implements IDownloadableFilePart {
                         outputFileStream.write(buffer, 0, lastRead);
                         outputFileStream.flush();
 
-                        if (status != DOWNLOADING)
+                        if (status != DOWNLOADING) {
                             return;
+                        }
                     }
                 }
                 status = DONE;
+                logger.trace("File part downloader done: " + getOutputFile().toString());
+
             } else {
                 status = ERROR;
                 logger.error("Received response without content");

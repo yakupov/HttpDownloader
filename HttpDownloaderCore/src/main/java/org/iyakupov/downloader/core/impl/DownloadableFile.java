@@ -230,8 +230,14 @@ public class DownloadableFile implements IDownloadableFile {
         }
     }
 
+    //FIXME using statuses
+    boolean saved = false;
+
     @Override
-    public boolean saveToDisk() throws IOException {
+    public synchronized boolean saveToDisk() throws IOException {
+        if (saved) return false; //FIXME
+        saved = true;
+
         try (OutputStream outputFileStream = new FileOutputStream(outputFile)) {
             for (IDownloadableFilePart part : getDownloadableParts()) {
                 //TODO: Create a new file, maybe

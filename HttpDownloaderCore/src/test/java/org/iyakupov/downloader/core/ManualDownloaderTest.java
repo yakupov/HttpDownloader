@@ -29,7 +29,7 @@ public class ManualDownloaderTest {
     public void downloaderTest() throws Exception {
         try (Dispatcher dispatcher = new Dispatcher(20)) {
             final File outputDir = new File("C:\\temp\\dl");
-            final IDownloadableFile downloadableFile = dispatcher.submitFile(nv260MUrl, outputDir, 10);
+            final IDownloadableFile downloadableFile = dispatcher.submitFile(slack600MUrl, outputDir, 10);
 
             int i = 0;
             while (downloadableFile.getStatus() != DownloadStatus.DONE && downloadableFile.getStatus() != DownloadStatus.ERROR) {
@@ -43,11 +43,12 @@ public class ManualDownloaderTest {
 
                 if (i++ == 3) {
                     dispatcher.setMaxThreads(2);
-                    //Parts statuses: SUSPENDED DONE SUSPENDED DOWNLOADING DOWNLOADING DONE DONE SUSPENDED DONE DOWNLOADING
-                    //TODO: race? Bad locking? Too much active threads =(
                 }
                 Thread.sleep(3000);
             }
         }
+
+        Thread.sleep(10000);
+        //TODO: special status "saving" or something like that
     }
 }

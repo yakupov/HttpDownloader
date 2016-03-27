@@ -31,8 +31,11 @@ public class Dispatcher implements Closeable {
 
         @Override
         public IDownloadableFilePart call() throws Exception {
+            logger.info("Proxy start, file name = " + filePart.getOutputFile());
+
             filePart.start();
             final DownloadStatus status = filePart.getStatus();
+            //logger.trace("Exit start() with status: " + status);
             switch (status) {
                 case SUSPENDED:
                     evictedTasks.add(filePart);
@@ -58,6 +61,7 @@ public class Dispatcher implements Closeable {
             }
 
             activeTasks.remove(filePart);
+            logger.trace("AT remove. Sz = " + activeTasks.size() + ", file name = " + filePart.getOutputFile());
             return filePart;
         }
     }
@@ -72,12 +76,18 @@ public class Dispatcher implements Closeable {
         @Override
         public void run() {
             while (!isStopped) {
-                activeTasksUpdateLock.lock();
+                //activeTasksUpdateLock.lock();
+                //TODO: ensure that the lock is not needed
+
+                //TODO: maybe move this logic to Proxy and RequestProcessor?
 
                 while (activeTasks.size() < maxThreads && !evictedTasks.isEmpty()) {
                     final IDownloadableFilePart part = evictedTasks.poll();
+                    logger.info("Active tasks size: " + activeTasks.size());
+                    logger.info("Awakening evicted task: " + part.getOutputFile());
                     activeTasks.add(part);
                     executorService.submit(new DownloadFilePartProxy(part));
+                    logger.info("Submitted... AT size = " + activeTasks.size());
                 }
 
                 final Iterator<IDownloadableFilePart> pausedTaskIterator = pausedTasks.iterator();
@@ -96,7 +106,7 @@ public class Dispatcher implements Closeable {
                     executorService.submit(new DownloadFilePartProxy(part));
                 }
 
-                activeTasksUpdateLock.unlock();
+                //activeTasksUpdateLock.unlock();
 
                 try {
                     Thread.sleep(1000);
@@ -143,9 +153,9 @@ public class Dispatcher implements Closeable {
     private final DownloadDispatchThread dispatchThread = new DownloadDispatchThread();
     private final DownloadRequestProcessor downloadRequestProcessor = new DownloadRequestProcessor();
 
-    private int maxThreads;
+    private volatile int maxThreads;
 
-    private final Lock activeTasksUpdateLock = new ReentrantLock();
+    //private final Lock activeTasksUpdateLock = new ReentrantLock();
 
     public Dispatcher(int maxThreads) {
         this.maxThreads = maxThreads;
@@ -158,22 +168,15 @@ public class Dispatcher implements Closeable {
     }
 
     public void setMaxThreads(int maxThreads) {
-        try {
-            activeTasksUpdateLock.lock();
-
-            final Iterator<IDownloadableFilePart> activeTaskIterator = activeTasks.iterator();
-            while (activeTasks.size() > maxThreads && activeTaskIterator.hasNext()) {
-                final IDownloadableFilePart part = activeTaskIterator.next();
-                logger.warn("Temporarily evicted task because of shortage of download threads: " + part.getOutputFile().toString());
-                part.suspend();
-                activeTasks.remove(part);
-                evictedTasks.add(part);
-            }
-
-            this.maxThreads = maxThreads;
-        } finally {
-            activeTasksUpdateLock.unlock();
+        final Iterator<IDownloadableFilePart> activeTaskIterator = activeTasks.iterator();
+        final int numberOfTasksToSuspend = activeTasks.size() - maxThreads;
+        for (int i = 0; i < numberOfTasksToSuspend; ++i) {
+            final IDownloadableFilePart part = activeTaskIterator.next();
+            logger.warn("Temporarily evicted task because of shortage of download threads: " + part.getOutputFile().toString());
+            part.suspend();
         }
+
+        this.maxThreads = maxThreads;
     }
 
     public IDownloadableFile submitFile(URL url, File outputDir) {
