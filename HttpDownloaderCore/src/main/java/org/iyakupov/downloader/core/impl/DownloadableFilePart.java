@@ -1,11 +1,9 @@
 package org.iyakupov.downloader.core.impl;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.iyakupov.downloader.core.DownloadStatus;
@@ -16,8 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
 
 import static org.iyakupov.downloader.core.DownloadStatus.*;
 
@@ -28,7 +24,7 @@ public class DownloadableFilePart implements IDownloadableFilePart {
     private final File outputFile;
     private final URL url;
     private final long start;
-    private final long length;
+    private long length;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -40,7 +36,9 @@ public class DownloadableFilePart implements IDownloadableFilePart {
             .build(); //TODO: maybe parms, maybe constructor? Maybe single client for all?
 
 
-    private DownloadStatus status = PENDING;
+    private volatile DownloadStatus status = PENDING;
+    private volatile int downloadSpeed = 0;
+    private volatile long downloadedBytesCount = 0;
 
     public DownloadableFilePart(File outputFile, URL url, long start, long length) {
         this.outputFile = outputFile;
@@ -51,7 +49,7 @@ public class DownloadableFilePart implements IDownloadableFilePart {
 
     @Override
     public int getDownloadSpeed() {
-        return 0; //FIXME
+        return downloadSpeed;
     }
 
     @Override
@@ -61,7 +59,12 @@ public class DownloadableFilePart implements IDownloadableFilePart {
 
     @Override
     public double getProgress() {
-        return 0; //FIXME
+        if (length <= 0) {
+            //TODO: process properly
+            return 0;
+        } else {
+            return (double) downloadedBytesCount / length;
+        }
     }
 
     @Override
@@ -82,49 +85,52 @@ public class DownloadableFilePart implements IDownloadableFilePart {
                 } else {
                     end = "";
                 }
-                httpRequest.addHeader(new BasicHeader("Range", "bytes=" + start +  "-" + end));
+                httpRequest.addHeader(new BasicHeader("Range", "bytes=" + start + "-" + end));
                 httpRequest.setConfig(headRequestConfig);
                 logger.trace("Executing request " + httpRequest.getURI());
-
                 final HttpResponse response = httpClient.execute(httpRequest);
-
                 logger.trace("HTTP response code: " + response.getStatusLine().getStatusCode());
                 logger.trace("HTTP response reason: " + response.getStatusLine().getReasonPhrase());
 
                 if (response.getEntity() != null) {
-
-                    final InputStream inputStream = response.getEntity().getContent();
-                    try (OutputStream outputFileStream = new FileOutputStream(outputFile);) {
-                        long totalBytesCopied = 0;
-                        final byte[] buf = new byte[1000];
-
-                        int read;
-                        while ((read = inputStream.read(buf)) >= 0) {
-                            totalBytesCopied += read;
-                            //logger.trace("Total bytes downloaded in this thread: " + totalBytesCopied);
-                            outputFileStream.write(buf, 0, read);
-                            outputFileStream.flush();
-                        }
-
-                        //response.getEntity().writeTo(outputFileStream);
-                        //outputFileStream.flush();
+                    if (length <= 0) {
+                        length = response.getEntity().getContentLength();
                     }
 
+                    try (OutputStream outputFileStream = new FileOutputStream(outputFile);
+                         final InputStream inputStream = response.getEntity().getContent()) {
 
-                    //TODO: remove if exists
-                   // Files.copy(inputStream, outputFile.toPath());
-                    //TODO: copy using small portions, check status (maybe pause etc)
-                    //TODO: controlled download
+                        final long beforeDownloadTimestamp = System.nanoTime();
+                        final long beforeDownloadProgress = downloadedBytesCount;
+                        final byte[] buffer = new byte[4096];
+                        int lastRead;
+                        while ((lastRead = inputStream.read(buffer)) >= 0) {
+                            //Update counters
+                            downloadedBytesCount += lastRead;
+                            final double downloadDuration = ((double) (System.nanoTime() - beforeDownloadTimestamp)) / 1e9;
+                            downloadSpeed = (int) ((double) (downloadedBytesCount - beforeDownloadProgress) / downloadDuration); //FIXME: write more carefully
+                            //FIXME: maybe we actually need instant speed... Current algo causes problem when some of the threads have finished their work
+
+                            //logger.trace("Total bytes downloaded in this thread: " + downloadedBytesCount);
+
+                            //Copy
+                            outputFileStream.write(buffer, 0, lastRead);
+                            outputFileStream.flush();
+
+                            //TODO: react on change of the status
+                        }
+                    }
                     status = DONE;
                 } else {
-                    logger.error("No entity in response");
+                    status = ERROR;
+                    logger.error("Received response without content");
                 }
-
             } catch (URISyntaxException | IOException e) {
                 status = ERROR;
-
                 logger.error("HTTP request processing failed", e);
                 throw new RuntimeException(e); //FIXME
+            } finally {
+                downloadSpeed = 0;
             }
 
         } else {

@@ -1,5 +1,6 @@
 package org.iyakupov.downloader.core.impl;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -18,6 +19,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,9 +52,16 @@ public class DownloadableFile implements IDownloadableFile {
     private volatile boolean isPartialDownloadSupported = false;
     private volatile boolean fatalErrorHappened = false;
 
-    public DownloadableFile(URL url, File outputFile, int maxThreadCount) {
+    public DownloadableFile(URL url, File outputDir, int maxThreadCount) {
         this.url = url;
-        this.outputFile = outputFile;
+        if (!outputDir.isDirectory()) {
+            throw new IllegalArgumentException("The given path is not a directory: " + outputDir);
+        }
+        final String fileName = FilenameUtils.getName(url.toString());
+        if (fileName == null) {
+            throw new IllegalArgumentException("The given URL has null file name: " + url);
+        }
+        this.outputFile = new File(outputDir, fileName);
         this.maxThreadCount = maxThreadCount;
     }
 
@@ -170,10 +179,7 @@ public class DownloadableFile implements IDownloadableFile {
                                     i == maxThreadCount - 1 ? -1 : chunkSize);
                             fileParts.add(part);
                         }
-
-                        //TODO: create threads and parts
                     } else { //single thread
-
                         final DownloadableFilePart part = new DownloadableFilePart(
                                 new File(outputFile.getAbsolutePath() + "_part" + 0),
                                 url, 0, -1);
@@ -222,21 +228,10 @@ public class DownloadableFile implements IDownloadableFile {
     @Override
     public boolean saveToDisk() throws IOException {
         try (OutputStream outputFileStream = new FileOutputStream(outputFile)) {
-            long totalBytesCopied = 0;
-            final byte[] buf = new byte[4096];
             for (IDownloadableFilePart part : getDownloadableParts()) {
-                /*final InputStream inputStream = Files.newInputStream(part.getOutputFile().toPath());
-                int read;
-                while ((read = inputStream.read(buf)) == buf.length) {
-                    totalBytesCopied += read;
-                    logger.trace("Total bytes copied: " + totalBytesCopied);
-                    outputFileStream.write(buf, 0, read);
-                    outputFileStream.flush();
-                }*/
-                //TODO: overweite if exists
-                //Files.copy(part.getOutputFile(), outputFileStream);
+                //TODO: overweite if exists. Or create a new one, maybe
                 Files.copy(part.getOutputFile().toPath(), outputFileStream);
-                //outputFileStream.flush();
+                Files.delete(part.getOutputFile().toPath());
             }
             return true;
         }
