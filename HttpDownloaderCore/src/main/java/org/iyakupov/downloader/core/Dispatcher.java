@@ -1,11 +1,13 @@
 package org.iyakupov.downloader.core;
 
 import com.google.common.collect.Sets;
+import org.iyakupov.downloader.core.impl.DownloadableFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.util.Collection;
+import java.io.File;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.Set;
@@ -19,10 +21,11 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Dispatcher implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private class FilePartProxy implements Callable<IDownloadableFilePart> {
+    //TODO: runnable?
+    private class DownloadFilePartProxy implements Callable<IDownloadableFilePart> {
         private final IDownloadableFilePart filePart;
 
-        public FilePartProxy(IDownloadableFilePart filePart) {
+        public DownloadFilePartProxy(IDownloadableFilePart filePart) {
             this.filePart = filePart;
         }
 
@@ -34,6 +37,9 @@ public class Dispatcher implements Closeable {
                 case SUSPENDED:
                     evictedTasks.add(filePart);
                     break;
+                case PAUSED:
+                    pausedTasks.add(filePart);
+                    break;
                 case CANCELLED:
                     allTasks.remove(filePart);
                     break;
@@ -43,7 +49,7 @@ public class Dispatcher implements Closeable {
                 case DONE:
                     final IDownloadableFile file = allTasks.remove(filePart);
                     if (file.getStatus() == DownloadStatus.DONE) {
-                        //TODO: maybe decrement some counter. No getStatus()!
+                        //TODO: maybe decrement some counter. No getStatus() - too slow!
                         file.saveToDisk();
                     }
                     break;
@@ -56,7 +62,7 @@ public class Dispatcher implements Closeable {
         }
     }
 
-    private class DispatchThread implements Runnable {
+    private class DownloadDispatchThread implements Runnable {
         private boolean isStopped = false;
 
         public void stop() {
@@ -71,13 +77,23 @@ public class Dispatcher implements Closeable {
                 while (activeTasks.size() < maxThreads && !evictedTasks.isEmpty()) {
                     final IDownloadableFilePart part = evictedTasks.poll();
                     activeTasks.add(part);
-                    executorService.submit(new FilePartProxy(part));
+                    executorService.submit(new DownloadFilePartProxy(part));
+                }
+
+                final Iterator<IDownloadableFilePart> pausedTaskIterator = pausedTasks.iterator();
+                while (activeTasks.size() < maxThreads && pausedTaskIterator.hasNext()) {
+                    final IDownloadableFilePart part = pausedTaskIterator.next();
+                    if (part.getStatus() != DownloadStatus.PAUSED) {
+                        activeTasks.add(part);
+                        pausedTasks.remove(part);
+                        executorService.submit(new DownloadFilePartProxy(part));
+                    }
                 }
 
                 while (activeTasks.size() < maxThreads && !newTasks.isEmpty()) {
                     final IDownloadableFilePart part = newTasks.poll();
                     activeTasks.add(part);
-                    executorService.submit(new FilePartProxy(part));
+                    executorService.submit(new DownloadFilePartProxy(part));
                 }
 
                 activeTasksUpdateLock.unlock();
@@ -91,13 +107,41 @@ public class Dispatcher implements Closeable {
         }
     }
 
+    private class DownloadRequestProcessor implements Runnable {
+        private boolean isStopped = false;
+
+        public void stop() {
+            isStopped = true;
+        }
+
+        @Override
+        public void run() {
+            while (!isStopped) {
+                IDownloadableFile newFile;
+                while ((newFile = newFileDownloadRequests.poll()) != null) {
+                    logger.info("Registering new download request. Output file name: " + newFile.getOutputFile().toString());
+                    newFile.start();
+                    if (newFile.getStatus() != DownloadStatus.ERROR) {
+                        newTasks.addAll(newFile.getDownloadableParts());
+                        for (IDownloadableFilePart part : newFile.getDownloadableParts()) {
+                            allTasks.putIfAbsent(part, newFile);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private final Queue<IDownloadableFile> newFileDownloadRequests = new ConcurrentLinkedQueue<>();
     private final Queue<IDownloadableFilePart> newTasks = new ConcurrentLinkedQueue<>();
     private final Queue<IDownloadableFilePart> evictedTasks = new ConcurrentLinkedQueue<>();
     private final ConcurrentMap<IDownloadableFilePart, IDownloadableFile> allTasks = new ConcurrentHashMap<>();
     private final Set<IDownloadableFilePart> activeTasks = Sets.newConcurrentHashSet();
+    private final Set<IDownloadableFilePart> pausedTasks = Sets.newConcurrentHashSet();
 
     private final ExecutorService executorService = Executors.newCachedThreadPool(); //TODO: maybe need to set pool size explicitly
-    private final DispatchThread dispatchThread = new DispatchThread();
+    private final DownloadDispatchThread dispatchThread = new DownloadDispatchThread();
+    private final DownloadRequestProcessor downloadRequestProcessor = new DownloadRequestProcessor();
 
     private int maxThreads;
 
@@ -106,11 +150,7 @@ public class Dispatcher implements Closeable {
     public Dispatcher(int maxThreads) {
         this.maxThreads = maxThreads;
         executorService.submit(dispatchThread);
-    }
-
-    public synchronized void submitTasks(Collection<IDownloadableFilePart> tasks, IDownloadableFile parentFile) {
-        newTasks.addAll(tasks);
-        tasks.stream().forEach(t -> allTasks.putIfAbsent(t, parentFile));
+        executorService.submit(downloadRequestProcessor);
     }
 
     public int getMaxThreads() {
@@ -118,18 +158,16 @@ public class Dispatcher implements Closeable {
     }
 
     public void setMaxThreads(int maxThreads) {
-        activeTasksUpdateLock.lock();
-
         try {
-            final int evictedTasksCount = this.maxThreads - maxThreads;
-            if (evictedTasksCount > 0) {
-                final Iterator<IDownloadableFilePart> iterator = activeTasks.iterator();
-                for (int i = 0; i < evictedTasksCount && iterator.hasNext(); ++i) {
-                    final IDownloadableFilePart part = iterator.next();
-                    part.pause();
-                    activeTasks.remove(part);
-                    evictedTasks.add(part);
-                }
+            activeTasksUpdateLock.lock();
+
+            final Iterator<IDownloadableFilePart> activeTaskIterator = activeTasks.iterator();
+            while (activeTasks.size() > maxThreads && activeTaskIterator.hasNext()) {
+                final IDownloadableFilePart part = activeTaskIterator.next();
+                logger.warn("Temporarily evicted task because of shortage of download threads: " + part.getOutputFile().toString());
+                part.suspend();
+                activeTasks.remove(part);
+                evictedTasks.add(part);
             }
 
             this.maxThreads = maxThreads;
@@ -138,8 +176,19 @@ public class Dispatcher implements Closeable {
         }
     }
 
+    public IDownloadableFile submitFile(URL url, File outputDir) {
+        return submitFile(url, outputDir, 1);
+    }
+
+    public IDownloadableFile submitFile(URL url, File outputDir, int nThreads) {
+        final IDownloadableFile downloadableFile = new DownloadableFile(url, outputDir, nThreads);
+        newFileDownloadRequests.add(downloadableFile);
+        return downloadableFile;
+    }
+
     public void close() {
         dispatchThread.stop();
+        downloadRequestProcessor.stop();
         executorService.shutdown();
     }
 }

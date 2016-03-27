@@ -5,9 +5,10 @@ package org.iyakupov.downloader.core;
  */
 public enum DownloadStatus {
     INITIATED,
-    DOWNLOADING,
     PENDING,
+    DOWNLOADING,
     SUSPENDED,
+    PAUSED,
     ERROR,
     CANCELLED,
     DONE

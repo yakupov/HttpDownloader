@@ -43,5 +43,6 @@ public interface IDownloadableFile {
 
     boolean saveToDisk() throws IOException;
 
+    @NotNull
     File getOutputFile();
 }

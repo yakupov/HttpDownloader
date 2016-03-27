@@ -29,13 +29,23 @@ public class ManualDownloaderTest {
     public void downloaderTest() throws Exception {
         try (Dispatcher dispatcher = new Dispatcher(20)) {
             final File outputDir = new File("C:\\temp\\dl");
-            final DownloadableFile downloadableFile = new DownloadableFile(nv260MUrl, outputDir, 2);
-            downloadableFile.start();
-            dispatcher.submitTasks(downloadableFile.getDownloadableParts(), downloadableFile);
+            final IDownloadableFile downloadableFile = dispatcher.submitFile(nv260MUrl, outputDir, 10);
+
+            int i = 0;
             while (downloadableFile.getStatus() != DownloadStatus.DONE && downloadableFile.getStatus() != DownloadStatus.ERROR) {
                 System.out.println("Status: " + downloadableFile.getStatus());
                 System.out.println("Speed: " + downloadableFile.getDownloadSpeed());
                 System.out.println("Progress: " + downloadableFile.getProgress());
+
+                System.out.print("Parts statuses: ");
+                downloadableFile.getDownloadableParts().forEach(p -> System.out.print(p.getStatus() + " "));
+                System.out.println();
+
+                if (i++ == 3) {
+                    dispatcher.setMaxThreads(2);
+                    //Parts statuses: SUSPENDED DONE SUSPENDED DOWNLOADING DOWNLOADING DONE DONE SUSPENDED DONE DOWNLOADING
+                    //TODO: race? Bad locking? Too much active threads =(
+                }
                 Thread.sleep(3000);
             }
         }

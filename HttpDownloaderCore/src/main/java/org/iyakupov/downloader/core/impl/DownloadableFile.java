@@ -83,6 +83,7 @@ public class DownloadableFile implements IDownloadableFile {
         } else {
             boolean isDownloading = false;
             boolean isSuspended = false;
+            boolean isPaused = false;
             boolean isDone = true;
             for (IDownloadableFilePart part: getDownloadableParts()) {
                 final DownloadStatus status = part.getStatus();
@@ -94,6 +95,8 @@ public class DownloadableFile implements IDownloadableFile {
                         isDownloading = true;
                     } else if (status == SUSPENDED) {
                         isSuspended = true;
+                    } else if (status == PAUSED) {
+                        isPaused = true;
                     }
                 }
             }
@@ -101,6 +104,8 @@ public class DownloadableFile implements IDownloadableFile {
                 return DONE;
             if (isDownloading)
                 return DOWNLOADING;
+            else if (isPaused)
+                return PAUSED;
             else if (isSuspended)
                 return SUSPENDED;
             else
@@ -167,7 +172,7 @@ public class DownloadableFile implements IDownloadableFile {
 
                 try {
                     filePartsLock.lock();
-                    if (contentLength > 0 && statusCode == 206) {
+                    if (maxThreadCount > 1 && contentLength > 0 && statusCode == 206) {
                         isPartialDownloadSupported = true;
 
                         final long chunkSize = contentLength / maxThreadCount;
@@ -229,7 +234,7 @@ public class DownloadableFile implements IDownloadableFile {
     public boolean saveToDisk() throws IOException {
         try (OutputStream outputFileStream = new FileOutputStream(outputFile)) {
             for (IDownloadableFilePart part : getDownloadableParts()) {
-                //TODO: overweite if exists. Or create a new one, maybe
+                //TODO: Create a new file, maybe
                 Files.copy(part.getOutputFile().toPath(), outputFileStream);
                 Files.delete(part.getOutputFile().toPath());
             }
@@ -237,6 +242,7 @@ public class DownloadableFile implements IDownloadableFile {
         }
     }
 
+    @NotNull
     @Override
     public File getOutputFile() {
         return outputFile;

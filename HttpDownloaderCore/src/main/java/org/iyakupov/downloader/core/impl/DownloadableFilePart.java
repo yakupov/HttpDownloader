@@ -8,6 +8,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.iyakupov.downloader.core.DownloadStatus;
 import org.iyakupov.downloader.core.IDownloadableFilePart;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,7 @@ public class DownloadableFilePart implements IDownloadableFilePart {
         return downloadSpeed;
     }
 
+    @NotNull
     @Override
     public DownloadStatus getStatus() {
         return status;
@@ -68,83 +70,110 @@ public class DownloadableFilePart implements IDownloadableFilePart {
     }
 
     @Override
-    public synchronized void pause() {
-        status = SUSPENDED;
+    public void pause() {
+        if (status != ERROR && status != DONE) {
+            status = PAUSED;
+        }
+    }
+
+    @Override
+    public void suspend() {
+        if (status != ERROR && status != DONE) {
+            status = SUSPENDED;
+        }
     }
 
     @Override
     public synchronized void start() {
-        if (status == PENDING) {
-            status = DOWNLOADING;
+        boolean resume = false;
 
-            try {
-                final HttpGet httpRequest = new HttpGet(url.toURI());
-                final String end;
-                if (length > 0) {
-                    end = String.valueOf(start + length - 1);
-                } else {
-                    end = "";
-                }
-                httpRequest.addHeader(new BasicHeader("Range", "bytes=" + start + "-" + end));
-                httpRequest.setConfig(headRequestConfig);
-                logger.trace("Executing request " + httpRequest.getURI());
-                final HttpResponse response = httpClient.execute(httpRequest);
-                logger.trace("HTTP response code: " + response.getStatusLine().getStatusCode());
-                logger.trace("HTTP response reason: " + response.getStatusLine().getReasonPhrase());
-
-                if (response.getEntity() != null) {
-                    if (length <= 0) {
-                        length = response.getEntity().getContentLength();
-                    }
-
-                    try (OutputStream outputFileStream = new FileOutputStream(outputFile);
-                         final InputStream inputStream = response.getEntity().getContent()) {
-
-                        final long beforeDownloadTimestamp = System.nanoTime();
-                        final long beforeDownloadProgress = downloadedBytesCount;
-                        final byte[] buffer = new byte[4096];
-                        int lastRead;
-                        while ((lastRead = inputStream.read(buffer)) >= 0) {
-                            //Update counters
-                            downloadedBytesCount += lastRead;
-                            final double downloadDuration = ((double) (System.nanoTime() - beforeDownloadTimestamp)) / 1e9;
-                            downloadSpeed = (int) ((double) (downloadedBytesCount - beforeDownloadProgress) / downloadDuration); //FIXME: write more carefully
-                            //FIXME: maybe we actually need instant speed... Current algo causes problem when some of the threads have finished their work
-
-                            //logger.trace("Total bytes downloaded in this thread: " + downloadedBytesCount);
-
-                            //Copy
-                            outputFileStream.write(buffer, 0, lastRead);
-                            outputFileStream.flush();
-
-                            //TODO: react on change of the status
-                        }
-                    }
-                    status = DONE;
-                } else {
-                    status = ERROR;
-                    logger.error("Received response without content");
-                }
-            } catch (URISyntaxException | IOException e) {
-                status = ERROR;
-                logger.error("HTTP request processing failed", e);
-                throw new RuntimeException(e); //FIXME
-            } finally {
-                downloadSpeed = 0;
-            }
-
-        } else {
-            //TODO: support resume
+        switch (status) {
+            case SUSPENDED:
+            case PAUSED:
+                resume = true;
+            case PENDING:
+                status = DOWNLOADING;
+                download(resume);
+            case DOWNLOADING:
+                return;
+            default:
+                throw new IllegalStateException("Failed to start download of a part of a file. Current status = " + status);
         }
+    }
+
+    private void download(boolean resume) {
+        try {
+            final HttpGet httpRequest = new HttpGet(url.toURI());
+            final String end;
+            if (length > 0) {
+                end = String.valueOf(start + length - 1);
+            } else {
+                end = "";
+            }
+            httpRequest.addHeader(new BasicHeader("Range", "bytes=" + (start + downloadedBytesCount) + "-" + end));
+            httpRequest.setConfig(headRequestConfig);
+            logger.trace("Executing request " + httpRequest.getURI());
+            final HttpResponse response = httpClient.execute(httpRequest);
+            logger.trace("HTTP response code: " + response.getStatusLine().getStatusCode());
+            logger.trace("HTTP response reason: " + response.getStatusLine().getReasonPhrase());
+
+            if (response.getEntity() != null) {
+                //TODO: check that RC=206
+
+                if (length <= 0) {
+                    length = response.getEntity().getContentLength();
+                }
 
 
+                try (OutputStream outputFileStream = new FileOutputStream(outputFile, resume);
+                     final InputStream inputStream = response.getEntity().getContent()) {
+
+                    final byte[] buffer = new byte[4096];
+                    int lastRead;
+                    int i = 0;
+                    long lastMeasureTimestamp = System.nanoTime();
+                    long lastMeasureBytesCount = downloadedBytesCount;
+                    while ((lastRead = inputStream.read(buffer)) >= 0) {
+                        //Update counters
+                        downloadedBytesCount += lastRead;
+                        if (i++ == 1000) {
+                            final double interval = ((double) (System.nanoTime() - lastMeasureTimestamp)) / 1e9;
+                            final double bytesCount = downloadedBytesCount - lastMeasureBytesCount;
+                            downloadSpeed = (int) (bytesCount / interval);
+
+                            lastMeasureTimestamp = System.nanoTime();
+                            lastMeasureBytesCount = downloadedBytesCount;
+                            i = 0;
+                        }
+
+                        //Copy
+                        outputFileStream.write(buffer, 0, lastRead);
+                        outputFileStream.flush();
+
+                        if (status != DOWNLOADING)
+                            return;
+                    }
+                }
+                status = DONE;
+            } else {
+                status = ERROR;
+                logger.error("Received response without content");
+            }
+        } catch (URISyntaxException | IOException e) {
+            status = ERROR;
+            logger.error("HTTP request processing failed", e);
+            throw new RuntimeException(e); //FIXME
+        } finally {
+            downloadSpeed = 0;
+        }
     }
 
     @Override
-    public synchronized void cancel() {
+    public void cancel() {
         status = CANCELLED;
     }
 
+    @NotNull
     @Override
     public File getOutputFile() {
         return outputFile;
