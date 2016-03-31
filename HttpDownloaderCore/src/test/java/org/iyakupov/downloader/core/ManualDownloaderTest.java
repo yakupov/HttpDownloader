@@ -31,6 +31,7 @@ public class ManualDownloaderTest {
 
         final File outputDir = new File("C:\\temp\\dl");
         final IDownloadableFile downloadableFile = dispatcher.submitFile(slack600MUrl, outputDir, 10);
+        IDownloadableFile downloadableFile2;
 
         int i = 0;
         while (downloadableFile.getStatus() != DownloadStatus.DONE && downloadableFile.getStatus() != DownloadStatus.ERROR) {
@@ -45,6 +46,7 @@ public class ManualDownloaderTest {
             if (i++ == 3) {
                 System.out.println("Now try with 2 threads");
                 dispatcher.resize(2);
+                downloadableFile2 = dispatcher.submitFile(nv260MUrl, outputDir, 3);
             }
 
             if (i == 10) {

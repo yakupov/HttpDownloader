@@ -40,7 +40,7 @@ public class DispatchingQueue implements IDispatchingQueue {
             else if (o2 == null)
                 return 1;
             else if (o1 instanceof ICommunicationAlgorithm && o2 instanceof ICommunicationAlgorithm)
-                return Integer.compare(((ICommunicationAlgorithm) o1).getPriority(), ((ICommunicationAlgorithm) o2).getPriority());
+                return Integer.compare(((ICommunicationAlgorithm) o2).getPriority(), ((ICommunicationAlgorithm) o1).getPriority());
             else
                 return 0;
         });
