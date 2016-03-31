@@ -1,7 +1,7 @@
 package org.iyakupov.downloader.core;
 
-import org.apache.commons.io.FilenameUtils;
-import org.iyakupov.downloader.core.impl.DownloadableFile;
+import org.iyakupov.downloader.core.dispatch.impl.DispatchingQueue;
+import org.iyakupov.downloader.core.file.IDownloadableFile;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -27,28 +27,34 @@ public class ManualDownloaderTest {
     @Test
     @Ignore
     public void downloaderTest() throws Exception {
-        try (Dispatcher dispatcher = new Dispatcher(20)) {
-            final File outputDir = new File("C:\\temp\\dl");
-            final IDownloadableFile downloadableFile = dispatcher.submitFile(slack600MUrl, outputDir, 10);
+        final DispatchingQueue dispatcher = new DispatchingQueue(20);
 
-            int i = 0;
-            while (downloadableFile.getStatus() != DownloadStatus.DONE && downloadableFile.getStatus() != DownloadStatus.ERROR) {
-                System.out.println("Status: " + downloadableFile.getStatus());
-                System.out.println("Speed: " + downloadableFile.getDownloadSpeed());
-                System.out.println("Progress: " + downloadableFile.getProgress());
+        final File outputDir = new File("C:\\temp\\dl");
+        final IDownloadableFile downloadableFile = dispatcher.submitFile(slack600MUrl, outputDir, 10);
 
-                System.out.print("Parts statuses: ");
-                downloadableFile.getDownloadableParts().forEach(p -> System.out.print(p.getStatus() + " "));
-                System.out.println();
+        int i = 0;
+        while (downloadableFile.getStatus() != DownloadStatus.DONE && downloadableFile.getStatus() != DownloadStatus.ERROR) {
+            System.out.println("Status: " + downloadableFile.getStatus());
+            System.out.println("Speed: " + downloadableFile.getDownloadSpeed());
+            System.out.println("Progress: " + downloadableFile.getProgress());
 
-                if (i++ == 3) {
-                    dispatcher.setMaxThreads(2);
-                }
-                Thread.sleep(3000);
+            System.out.print("Parts statuses: ");
+            downloadableFile.getDownloadableParts().forEach(p -> System.out.print(p.getStatus() + " "));
+            System.out.println();
+
+            if (i++ == 3) {
+                System.out.println("Now try with 2 threads");
+                dispatcher.resize(2);
             }
+
+            if (i == 10) {
+                System.out.println("Now try with 5 threads");
+                dispatcher.resize(5);
+            }
+
+            Thread.sleep(3000);
         }
 
-        Thread.sleep(10000);
-        //TODO: special status "saving" or something like that
+        System.out.println("DONE, status = " + downloadableFile.getStatus());
     }
 }

@@ -11,5 +11,6 @@ public enum DownloadStatus {
     PAUSED,
     ERROR,
     CANCELLED,
+    UNSAVED,
     DONE
 }
