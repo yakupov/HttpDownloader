@@ -1,7 +1,7 @@
 package org.iyakupov.downloader.core;
 
 /**
- * Created by Ilia on 26.03.2016.
+ * Statuses of a file (part) download request.
  */
 public enum DownloadStatus {
     INITIATED,

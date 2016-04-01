@@ -5,8 +5,8 @@ import org.iyakupov.downloader.core.comms.ICommunicationAlgorithm;
 import org.iyakupov.downloader.core.comms.ICommunicationComponent;
 import org.iyakupov.downloader.core.comms.ICommunicationResult;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
-import org.iyakupov.downloader.core.file.IDownloadableFile;
-import org.iyakupov.downloader.core.file.impl.DownloadableFilePart;
+import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
+import org.iyakupov.downloader.core.file.internal.impl.DownloadableFilePart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +20,9 @@ public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAl
 
     private final IDispatchingQueue dispatcher;
     private final ICommunicationComponent comm;
-    private final IDownloadableFile file;
+    private final IDownloadableFileInt file;
 
-    public HttpDownloadCheckCommunicationAlgorithm(IDispatchingQueue dispatcher, ICommunicationComponent comm, IDownloadableFile file) {
+    public HttpDownloadCheckCommunicationAlgorithm(IDispatchingQueue dispatcher, ICommunicationComponent comm, IDownloadableFileInt file) {
         this.dispatcher = dispatcher;
         this.comm = comm;
         this.file = file;
@@ -51,7 +51,7 @@ public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAl
                         file.getLocator(),
                         i * chunkSize,
                         i == maxThreadCount - 1 ? -1 : chunkSize);
-                file.addPart(part); //TODO: maybe don't store refs of the parts in the file
+                file.addPart(part);
                 dispatcher.submitTask(file, part);
             }
         } else { //single thread

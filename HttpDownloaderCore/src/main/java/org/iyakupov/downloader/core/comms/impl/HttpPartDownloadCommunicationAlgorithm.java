@@ -5,12 +5,14 @@ import org.iyakupov.downloader.core.comms.ICommunicationAlgorithm;
 import org.iyakupov.downloader.core.comms.ICommunicationComponent;
 import org.iyakupov.downloader.core.comms.ICommunicationResult;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
-import org.iyakupov.downloader.core.file.IDownloadableFile;
+import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
 import org.iyakupov.downloader.core.file.IDownloadableFilePart;
+import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
 
 import static org.iyakupov.downloader.core.DownloadStatus.*;
 
@@ -25,9 +27,9 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
     private final int priority;
     private final IDispatchingQueue dispatcher;
     private final ICommunicationComponent comm;
-    private final IDownloadableFilePart filePart;
+    private final IDownloadableFilePartInt filePart;
 
-    public HttpPartDownloadCommunicationAlgorithm(int priority, IDispatchingQueue dispatcher, ICommunicationComponent comm, IDownloadableFilePart filePart) {
+    public HttpPartDownloadCommunicationAlgorithm(int priority, IDispatchingQueue dispatcher, ICommunicationComponent comm, IDownloadableFilePartInt filePart) {
         this.priority = priority;
         this.dispatcher = dispatcher;
         this.comm = comm;
@@ -109,10 +111,10 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
 
         try {
             if (filePart.getRemainingLength() <= 0) {
-                final IDownloadableFile file = dispatcher.getParentFile(filePart);
+                final IDownloadableFileInt file = dispatcher.getParentFile(filePart);
                 filePart.completeSuccessfully();
-                if (file.getStatus() == UNSAVED) { //TODO: use counter
-                    file.saveToDisk();
+                if (file.decrementAndGetNonSuccessfullyDownloadedPartsCount() == 0) {
+                    combineTemporaryFiles(file);
                 }
             } else {
                 filePart.completeWithError("Stream has ended, but remaining length is greater than zero");
@@ -120,6 +122,26 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
         } catch (IOException e) {
             logger.error("Failed to copy data from temporary file to final one", e);
             filePart.completeWithError("Failed to copy data from temporary file to final one: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Combine all temporary files into one resulting file.
+     *
+     * @param file File download request
+     * @throws IOException
+     */
+    private void combineTemporaryFiles(IDownloadableFileInt file) throws IOException {
+        try (OutputStream outputFileStream = new FileOutputStream(file.getOutputFile())) {
+            for (IDownloadableFilePart part : file.getDownloadableParts()) {
+                logger.trace("Copy data from " + part.getOutputFile() + " to " + file.getOutputFile());
+
+                //TODO: Create a new file if exists, maybe
+                Files.copy(part.getOutputFile().toPath(), outputFileStream);
+                Files.delete(part.getOutputFile().toPath());
+            }
+
+            file.markAsSaved();
         }
     }
 }

@@ -8,31 +8,33 @@ import org.iyakupov.downloader.core.comms.impl.HttpDownloadCheckCommunicationAlg
 import org.iyakupov.downloader.core.comms.impl.HttpPartDownloadCommunicationAlgorithm;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
-import org.iyakupov.downloader.core.file.IDownloadableFilePart;
-import org.iyakupov.downloader.core.file.impl.DownloadableFile;
+import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
+import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
+import org.iyakupov.downloader.core.file.internal.impl.DownloadableFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.*;
 
 /**
- * Created by Ilia on 30.03.2016.
+ * Queued thread pool, designed to process file download requests
  */
 public class DispatchingQueue implements IDispatchingQueue {
-    private final static int QUEUE_SIZE = 1000; //TODO: parm
+    public final static int DEFAULT_QUEUE_CAPACITY = 1000;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private final ICommunicationComponent communicationComponent = new HttpCommunicationComponent();
-
+    private final Map<IDownloadableFilePartInt, IDownloadableFileInt> allTasks = new ConcurrentHashMap<>();
     private final ThreadPoolExecutor executor;
-    private final Map<IDownloadableFilePart, IDownloadableFile> allTasks = new ConcurrentHashMap<>();
 
     public DispatchingQueue(int maxNumberOfThreads) {
-        final BlockingQueue<Runnable> taskQueue = new PriorityBlockingQueue<>(QUEUE_SIZE, (o1, o2) -> {
+        this(maxNumberOfThreads, DEFAULT_QUEUE_CAPACITY);
+    }
+
+    public DispatchingQueue(int maxNumberOfThreads, int queueCapacity) {
+        final BlockingQueue<Runnable> taskQueue = new PriorityBlockingQueue<>(queueCapacity, (o1, o2) -> {
             if (o1 == o2)
                 return 0;
             else if (o1 == null)
@@ -44,65 +46,56 @@ public class DispatchingQueue implements IDispatchingQueue {
             else
                 return 0;
         });
-        executor = new ThreadPoolExecutor(maxNumberOfThreads, maxNumberOfThreads, 0, TimeUnit.SECONDS, taskQueue);
-
-        // TODO: Thread pool DOES NOT GROW if the queue is not full. Sad but true.
-        // Need better thread pool, which does not rely on the size of the underlying queue.
+        executor = new ThreadPoolExecutor(maxNumberOfThreads, maxNumberOfThreads, 60L, TimeUnit.SECONDS, taskQueue);
+        executor.allowCoreThreadTimeOut(true);
     }
 
     @Override
-    public IDownloadableFile getParentFile(IDownloadableFilePart part) {
+    public IDownloadableFileInt getParentFile(IDownloadableFilePartInt part) {
         return allTasks.get(part);
     }
 
-    private void submitNewFile(IDownloadableFile file) {
+    private void submitDownloadRequest(IDownloadableFileInt file) {
         executor.execute(new HttpDownloadCheckCommunicationAlgorithm(this, communicationComponent, file));
     }
 
     @Override
-    public void submitEvictedTask(IDownloadableFilePart part) {
-        final HttpPartDownloadCommunicationAlgorithm task = new HttpPartDownloadCommunicationAlgorithm(100, this, communicationComponent, part);
-        logger.trace("New task created... Status = " + part.getStatus());
-        executor.execute(task);
-        //taskQueue.offer(task);
-        logger.trace("Submitted...");
+    public void submitEvictedTask(IDownloadableFilePartInt part) {
+        executor.execute(new HttpPartDownloadCommunicationAlgorithm(100, this, communicationComponent, part));
     }
 
     @Override
-    public void submitTask(IDownloadableFile file, IDownloadableFilePart part) {
+    public void submitTask(IDownloadableFileInt file, IDownloadableFilePartInt part) {
         allTasks.put(part, file);
         executor.execute(new HttpPartDownloadCommunicationAlgorithm(10, this, communicationComponent, part));
+        //TODO: check for duplicates maybe?
     }
 
     @Override
-    public synchronized void resize(int newSize) {
+    public synchronized void setThreadPoolSize(int newSize) {
         executor.setCorePoolSize(newSize);
         executor.setMaximumPoolSize(newSize);
         int tasksToEvict = executor.getActiveCount() - newSize;
-        for (IDownloadableFilePart part: allTasks.keySet()) {
+        for (IDownloadableFilePartInt part: allTasks.keySet()) {
             if (tasksToEvict-- <= 0)
                 break;
-
             if (part.getStatus() == DownloadStatus.DOWNLOADING) {
                 logger.warn("Evicted task because of the shortage of threads: " + part.getLocator());
-
                 part.suspend();
-                //submitEvictedTask(part);
             }
         }
-        logger.trace("Resize finished");
     }
 
-    @Override
-    public void markFileAsCompleted(IDownloadableFile file) {
+    //public void markFileAsCompleted(IDownloadableFileInt file) {
         //TODO: remove from the Map or move to another storage... Or don't do anything.
         //Need to define methods for manipulations (e.g. resumeDownload, cancel etc.) with files, managed by this dispatcher.
-    }
+        //Need to manage the entries of the parts map
+    //}
 
     @Override
-    public IDownloadableFile submitFile(URL url, File outputDir, int nThreads) {
-        final IDownloadableFile downloadableFile = new DownloadableFile(url, outputDir, nThreads);
-        submitNewFile(downloadableFile);
+    public IDownloadableFile submitFile(String url, File outputDir, int nThreads) {
+        final DownloadableFile downloadableFile = new DownloadableFile(url, outputDir, nThreads);
+        submitDownloadRequest(downloadableFile);
         return downloadableFile;
     }
 }

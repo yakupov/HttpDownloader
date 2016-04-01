@@ -1,7 +1,7 @@
-package org.iyakupov.downloader.core.file.impl;
+package org.iyakupov.downloader.core.file.internal.impl;
 
 import org.iyakupov.downloader.core.DownloadStatus;
-import org.iyakupov.downloader.core.file.IDownloadableFilePart;
+import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,9 +10,9 @@ import java.io.File;
 import static org.iyakupov.downloader.core.DownloadStatus.*;
 
 /**
- * Created by Ilia on 26.03.2016.
+ * Continuous chunk of a file that is downloaded and stored in a temporary file.
  */
-public class DownloadableFilePart implements IDownloadableFilePart {
+public class DownloadableFilePart implements IDownloadableFilePartInt {
     private final File outputFile;
 
     private final String locator;

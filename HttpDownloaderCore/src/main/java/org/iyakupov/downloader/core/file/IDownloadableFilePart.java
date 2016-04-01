@@ -7,15 +7,13 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 
 /**
- * Contiguous chunk of a file that is downloaded and stored in a temp file.
+ * Continuous chunk of a file that is downloaded and stored in a temporary file.
  */
 public interface IDownloadableFilePart {
     /**
      * @return speed in bytes/s
      */
     int getDownloadSpeed();
-
-    void setDownloadSpeed(int speed);
 
     @NotNull
     DownloadStatus getStatus();
@@ -39,18 +37,6 @@ public interface IDownloadableFilePart {
 
     void cancel();
 
-    /**
-     * Set status DONE
-     */
-    void completeSuccessfully();
-
-    /**
-     * Set status ERROR and store the error message
-     *
-     * @param errorText Error message
-     */
-    void completeWithError(@NotNull String errorText);
-
     @Nullable
     String getErrorText();
 
@@ -65,21 +51,4 @@ public interface IDownloadableFilePart {
      */
     @NotNull
     String getLocator();
-
-    long getCurrentStartPosition();
-
-    /**
-     * @return -1 if the length is unknown, remaining number of bytes to download otherwise.
-     */
-    long getRemainingLength();
-
-    void incrementDownloadedBytesCount(long diff);
-
-    /**
-     * Sets total length of this chunk if it's unknown yet (e.g. was not returned in the initial HEAD request).
-     * If total length is already known (i.e. positive), this method won't do anything.
-     *
-     * @param length Actual length
-     */
-    void updateTotalLength(long length);
 }

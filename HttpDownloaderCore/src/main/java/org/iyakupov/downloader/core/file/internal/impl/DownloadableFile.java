@@ -1,47 +1,39 @@
-package org.iyakupov.downloader.core.file.impl;
+package org.iyakupov.downloader.core.file.internal.impl;
 
 import org.apache.commons.io.FilenameUtils;
 import org.iyakupov.downloader.core.DownloadStatus;
-import org.iyakupov.downloader.core.file.IDownloadableFile;
+import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
 import org.iyakupov.downloader.core.file.IDownloadableFilePart;
+import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URL;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.iyakupov.downloader.core.DownloadStatus.*;
 
 /**
- * Created by Ilia on 26.03.2016.
+ * File download request default implementation
  */
-public class DownloadableFile implements IDownloadableFile {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    private final URL url;
+public class DownloadableFile implements IDownloadableFileInt {
+    private final String locator;
     private final File outputFile;
     private final int maxThreadCount;
+
     private volatile boolean fileSaved = false;
+    private final AtomicInteger unsavedPartsCount = new AtomicInteger(0);
 
     private final List<IDownloadableFilePart> fileParts = new ArrayList<>();
 
-    public DownloadableFile(URL url, File outputDir, int maxThreadCount) {
-        this.url = url;
+    public DownloadableFile(@NotNull String locator, @NotNull File outputDir, int maxThreadCount) {
+        this.locator = locator;
         if (!outputDir.isDirectory()) {
             throw new IllegalArgumentException("The given path is not a directory: " + outputDir);
         }
-        final String fileName = FilenameUtils.getName(url.toString());
-        if (fileName == null) {
-            throw new IllegalArgumentException("The given URL has null file name: " + url);
-        }
+        final String fileName = FilenameUtils.getName(locator);
         this.outputFile = new File(outputDir, fileName);
         this.maxThreadCount = maxThreadCount;
     }
@@ -53,7 +45,6 @@ public class DownloadableFile implements IDownloadableFile {
 
     @NotNull
     @Override
-    //TODO: maybe this method is not needed? Or optimize...
     public DownloadStatus getStatus() {
         if (fileSaved) {
             return DONE;
@@ -66,7 +57,6 @@ public class DownloadableFile implements IDownloadableFile {
             boolean isDone = true;
             for (IDownloadableFilePart part: getDownloadableParts()) {
                 //logger.trace("Part " + part.getOutputFile() + " status " + part.getStatus());
-
                 final DownloadStatus status = part.getStatus();
                 if (status != DONE) {
                     isDone = false;
@@ -129,26 +119,25 @@ public class DownloadableFile implements IDownloadableFile {
     }
 
     @Override
-    public synchronized boolean saveToDisk() throws IOException {
-        if (fileSaved)
-            return false;
+    public synchronized void addPart(@NotNull IDownloadableFilePartInt part) {
+        fileParts.add(part);
+        unsavedPartsCount.incrementAndGet();
+    }
 
-        if (getDownloadableParts().size() == 1) {
+    @Override
+    public void markAsSaved() {
+        if (unsavedPartsCount.get() == 0) {
             fileSaved = true;
-            return true; // The results are already in the correct file
+        } else {
+            throw new IllegalStateException("Tried to mark file as saved, although there are " +
+                    unsavedPartsCount.get() + " parts that are not (yet) successfully downloaded");
         }
+    }
 
-        try (OutputStream outputFileStream = new FileOutputStream(outputFile)) {
-            for (IDownloadableFilePart part : getDownloadableParts()) {
-                logger.trace("Copy data from " + part.getOutputFile() + " to " + getOutputFile());
 
-                //TODO: Create a new file if exists, maybe
-                Files.copy(part.getOutputFile().toPath(), outputFileStream);
-                Files.delete(part.getOutputFile().toPath());
-            }
-            fileSaved = true;
-            return true;
-        }
+    @Override
+    public int decrementAndGetNonSuccessfullyDownloadedPartsCount() {
+        return unsavedPartsCount.decrementAndGet();
     }
 
     @NotNull
@@ -157,13 +146,9 @@ public class DownloadableFile implements IDownloadableFile {
         return outputFile;
     }
 
+    @NotNull
     @Override
     public String getLocator() {
-        return url.toString();
-    }
-
-    @Override
-    public synchronized void addPart(IDownloadableFilePart part) {
-        fileParts.add(part);
+        return locator;
     }
 }

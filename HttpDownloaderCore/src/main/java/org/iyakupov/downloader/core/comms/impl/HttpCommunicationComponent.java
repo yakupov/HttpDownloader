@@ -32,17 +32,17 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
     private final RequestConfig httpRequestConfig;
 
     public HttpCommunicationComponent() {
-        final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         // Increase max total connection to 200
-        cm.setMaxTotal(200);
+        connectionManager.setMaxTotal(200);
         // Increase default max connection per route to 20
-        cm.setDefaultMaxPerRoute(200);
+        connectionManager.setDefaultMaxPerRoute(200);
         /*// Increase max connections for localhost:80 to 50
         HttpHost localhost = new HttpHost("locahost", 80);
-        cm.setMaxPerRoute(new HttpRoute(localhost), 50);
+        connectionManager.setMaxPerRoute(new HttpRoute(localhost), 50);
         */
         httpClient = HttpClients.custom()
-                .setConnectionManager(cm)
+                .setConnectionManager(connectionManager)
                 .build();
 
         httpRequestConfig = RequestConfig.custom()

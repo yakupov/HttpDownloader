@@ -1,24 +1,52 @@
 package org.iyakupov.downloader.core.dispatch;
 
 import org.iyakupov.downloader.core.file.IDownloadableFile;
-import org.iyakupov.downloader.core.file.IDownloadableFilePart;
+import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
+import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
 
 import java.io.File;
-import java.net.URL;
 
 /**
- * Created by Ilia on 30.03.2016.
+ * This is an interface to a queued thread pool, designed to process file download requests.
  */
 public interface IDispatchingQueue {
-    IDownloadableFile getParentFile(IDownloadableFilePart part);
+    /**
+     * Get the parent file for this downloadable part
+     *
+     * @param part Download task
+     * @return Parent file
+     */
+    IDownloadableFileInt getParentFile(IDownloadableFilePartInt part);
 
-    void submitEvictedTask(IDownloadableFilePart part);
+    /**
+     * Submit file part download resume with high priority
+     *
+     * @param part Resumed download task
+     */
+    void submitEvictedTask(IDownloadableFilePartInt part);
 
-    void submitTask(IDownloadableFile file, IDownloadableFilePart part);
+    /**
+     * Submit file part download with normal priority
+     *
+     * @param file Parent file for this downloadable part
+     * @param part Downloadable part (part download task)
+     */
+    void submitTask(IDownloadableFileInt file, IDownloadableFilePartInt part);
 
-    void resize(int newSize);
+    /**
+     * Sets the maximal number of download worker threads
+     *
+     * @param newSize Number of threads. Must be positive.
+     */
+    void setThreadPoolSize(int newSize);
 
-    void markFileAsCompleted(IDownloadableFile file);
-
-    IDownloadableFile submitFile(URL url, File outputDir, int nThreads);
+    /**
+     * Create a new file download request
+     *
+     * @param url       Location of this file in the remote location
+     * @param outputDir Output file
+     * @param nThreads  Number of pieces to cut this file into in order to perform parallel download
+     * @return File download request
+     */
+    IDownloadableFile submitFile(String url, File outputDir, int nThreads);
 }

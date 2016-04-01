@@ -30,7 +30,7 @@ public class ManualDownloaderTest {
         final DispatchingQueue dispatcher = new DispatchingQueue(20);
 
         final File outputDir = new File("C:\\temp\\dl");
-        final IDownloadableFile downloadableFile = dispatcher.submitFile(slack600MUrl, outputDir, 10);
+        final IDownloadableFile downloadableFile = dispatcher.submitFile(slack600MUrl.toString(), outputDir, 10);
         IDownloadableFile downloadableFile2;
 
         int i = 0;
@@ -45,13 +45,13 @@ public class ManualDownloaderTest {
 
             if (i++ == 3) {
                 System.out.println("Now try with 2 threads");
-                dispatcher.resize(2);
-                downloadableFile2 = dispatcher.submitFile(nv260MUrl, outputDir, 3);
+                dispatcher.setThreadPoolSize(2);
+                downloadableFile2 = dispatcher.submitFile(nv260MUrl.toString(), outputDir, 3);
             }
 
             if (i == 10) {
                 System.out.println("Now try with 5 threads");
-                dispatcher.resize(5);
+                dispatcher.setThreadPoolSize(5);
             }
 
             Thread.sleep(3000);
