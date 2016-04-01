@@ -19,6 +19,7 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
 
     private final long start;
     private long length;
+    private boolean partialDownloadSupported = true;
 
     private volatile DownloadStatus status = PENDING;
     private volatile int downloadSpeed = 0;
@@ -74,6 +75,8 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
     @Override
     public void start() {
         if (status != ERROR && status != DONE) {
+            if (!partialDownloadSupported)
+                downloadedBytesCount = 0;
             status = DOWNLOADING;
         }
     }
@@ -135,5 +138,15 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
     public void updateTotalLength(long length) {
         if (this.length <= 0)
             this.length = length;
+    }
+
+    @Override
+    public boolean isDownloadResumeSupported() {
+        return partialDownloadSupported;
+    }
+
+    @Override
+    public void setDownloadResumeNotSupported() {
+        partialDownloadSupported = false;
     }
 }

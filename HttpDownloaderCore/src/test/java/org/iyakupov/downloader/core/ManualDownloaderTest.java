@@ -45,13 +45,13 @@ public class ManualDownloaderTest {
 
             if (i++ == 3) {
                 System.out.println("Now try with 2 threads");
-                dispatcher.setThreadPoolSize(2);
+                dispatcher.setThreadPoolSize(2, false);
                 downloadableFile2 = dispatcher.submitFile(nv260MUrl.toString(), outputDir, 3);
             }
 
             if (i == 10) {
                 System.out.println("Now try with 5 threads");
-                dispatcher.setThreadPoolSize(5);
+                dispatcher.setThreadPoolSize(5, false);
             }
 
             Thread.sleep(3000);

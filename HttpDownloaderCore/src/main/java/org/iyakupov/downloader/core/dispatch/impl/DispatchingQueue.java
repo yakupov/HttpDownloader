@@ -72,16 +72,29 @@ public class DispatchingQueue implements IDispatchingQueue {
     }
 
     @Override
-    public synchronized void setThreadPoolSize(int newSize) {
+    public synchronized void setThreadPoolSize(int newSize, boolean evictNonResumable) {
         executor.setCorePoolSize(newSize);
         executor.setMaximumPoolSize(newSize);
+
         int tasksToEvict = executor.getActiveCount() - newSize;
+
         for (IDownloadableFilePartInt part: allTasks.keySet()) {
             if (tasksToEvict-- <= 0)
                 break;
-            if (part.getStatus() == DownloadStatus.DOWNLOADING) {
+            if (part.getStatus() == DownloadStatus.DOWNLOADING && part.isDownloadResumeSupported()) {
                 logger.warn("Evicted task because of the shortage of threads: " + part.getLocator());
                 part.suspend();
+            }
+        }
+
+        if (evictNonResumable && tasksToEvict > 0) {
+            for (IDownloadableFilePartInt part: allTasks.keySet()) {
+                if (tasksToEvict-- <= 0)
+                    break;
+                if (part.getStatus() == DownloadStatus.DOWNLOADING) {
+                    logger.warn("Evicted task because of the shortage of threads: " + part.getLocator());
+                    part.suspend();
+                }
             }
         }
     }

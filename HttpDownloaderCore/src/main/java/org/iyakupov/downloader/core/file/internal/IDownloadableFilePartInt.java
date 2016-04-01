@@ -52,4 +52,14 @@ public interface IDownloadableFilePartInt extends IDownloadableFilePart {
      * @param length Actual length
      */
     void updateTotalLength(long length);
+
+    /**
+     * @return Whether the server supports partial downloads
+     */
+    boolean isDownloadResumeSupported();
+
+    /**
+     * Set the flag, indicating that the server does not support partial download
+     */
+    void setDownloadResumeNotSupported();
 }

@@ -36,9 +36,11 @@ public interface IDispatchingQueue {
     /**
      * Sets the maximal number of download worker threads
      *
-     * @param newSize Number of threads. Must be positive.
+     * @param newSize           Number of threads. Must be positive.
+     * @param evictNonResumable Whether tasks where server does not support partial download may be evicted.
+     *                          If set to false, the total number of threads may stay greater than newSize.
      */
-    void setThreadPoolSize(int newSize);
+    void setThreadPoolSize(int newSize, boolean evictNonResumable);
 
     /**
      * Create a new file download request

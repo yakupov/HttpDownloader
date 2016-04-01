@@ -56,10 +56,11 @@ public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAl
             }
         } else { //single thread
             //noinspection ResultOfMethodCallIgnored
-            file.getOutputFile().delete();
-            final DownloadableFilePart part = new DownloadableFilePart(
-                    file.getOutputFile(),
-                    file.getLocator(), 0, -1);
+            file.getOutputFile().delete(); //TODO: create new file maybe?
+            final DownloadableFilePart part = new DownloadableFilePart(file.getOutputFile(), file.getLocator(), 0, -1);
+            if (communicationResult.getResponseCode() != CommunicationStatus.PARTIAL_CONTENT_OK) {
+                part.setDownloadResumeNotSupported();
+            }
             file.addPart(part);
             dispatcher.submitTask(file, part);
         }
