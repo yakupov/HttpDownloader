@@ -10,7 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Created by Ilia on 26.03.2016.
+ * Temporary manual "integration" test
  */
 @SuppressWarnings({"unused", "FieldCanBeLocal"})
 public class ManualDownloaderTest {
@@ -31,10 +31,12 @@ public class ManualDownloaderTest {
 
         final File outputDir = new File("C:\\temp\\dl");
         final IDownloadableFile downloadableFile = dispatcher.submitFile(slack600MUrl.toString(), outputDir, 10);
-        IDownloadableFile downloadableFile2;
+        IDownloadableFile downloadableFile2 = null;
 
         int i = 0;
-        while (downloadableFile.getStatus() != DownloadStatus.DONE && downloadableFile.getStatus() != DownloadStatus.ERROR) {
+        while (downloadableFile.getStatus() != DownloadStatus.DONE &&
+                downloadableFile.getStatus() != DownloadStatus.ERROR &&
+                downloadableFile.getStatus() != DownloadStatus.CANCELLED) {
             System.out.println("Status: " + downloadableFile.getStatus());
             System.out.println("Speed: " + downloadableFile.getDownloadSpeed());
             System.out.println("Progress: " + downloadableFile.getProgress());
@@ -49,14 +51,44 @@ public class ManualDownloaderTest {
                 downloadableFile2 = dispatcher.submitFile(nv260MUrl.toString(), outputDir, 3);
             }
 
-            if (i == 10) {
+            if (i == 7) {
                 System.out.println("Now try with 5 threads");
                 dispatcher.setThreadPoolSize(5, false);
+            }
+
+            if (i == 10) {
+                System.out.println("Pause");
+                downloadableFile.pause();
+            }
+
+            if (i == 13) {
+                System.out.println("Resume");
+                dispatcher.resumeDownload(downloadableFile);
+            }
+
+            if (i == 16) {
+                System.out.println("File 1: forget");
+                dispatcher.forgetFile(downloadableFile);
             }
 
             Thread.sleep(3000);
         }
 
         System.out.println("DONE, status = " + downloadableFile.getStatus());
+
+        while (downloadableFile2 != null && downloadableFile2.getStatus() != DownloadStatus.DONE && downloadableFile2.getStatus() != DownloadStatus.ERROR) {
+            System.out.println("Status: " + downloadableFile2.getStatus());
+            System.out.println("Speed: " + downloadableFile2.getDownloadSpeed());
+            System.out.println("Progress: " + downloadableFile2.getProgress());
+
+            System.out.print("Parts statuses: ");
+            downloadableFile2.getDownloadableParts().forEach(p -> System.out.print(p.getStatus() + " "));
+            System.out.println();
+
+            Thread.sleep(3000);
+        }
+
+        if (downloadableFile2 != null)
+            System.out.println("DONE, status = " + downloadableFile2.getStatus());
     }
 }

@@ -28,11 +28,6 @@ public interface IDownloadableFilePart {
      */
     void pause();
 
-    /**
-     * Automatically suspend task because of the shortage of available threads
-     */
-    void suspend();
-
     void start();
 
     void cancel();

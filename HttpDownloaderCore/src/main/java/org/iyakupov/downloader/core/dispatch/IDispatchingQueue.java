@@ -5,6 +5,7 @@ import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
 import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
 
 import java.io.File;
+import java.util.Collection;
 
 /**
  * This is an interface to a queued thread pool, designed to process file download requests.
@@ -31,7 +32,7 @@ public interface IDispatchingQueue {
      * @param file Parent file for this downloadable part
      * @param part Downloadable part (part download task)
      */
-    void submitTask(IDownloadableFileInt file, IDownloadableFilePartInt part);
+    void submitNewTask(IDownloadableFileInt file, IDownloadableFilePartInt part);
 
     /**
      * Sets the maximal number of download worker threads
@@ -51,4 +52,25 @@ public interface IDispatchingQueue {
      * @return File download request
      */
     IDownloadableFile submitFile(String url, File outputDir, int nThreads);
+
+    /**
+     * @return The collection of file download requests that this Dispatcher knows about.
+     */
+    Collection<IDownloadableFile> getAllFiles();
+
+    /**
+     * Cancel file download and remove file download request from Dispatcher's data structures.
+     *
+     * @param file File download request
+     * @return false if the Dispatcher did not knew about this file, true otherwise.
+     */
+    boolean forgetFile(IDownloadableFile file);
+
+    /**
+     * Resume the download of a paused file.
+     *
+     * @param file File download request
+     * @return Whether the Dispatcher has managed to resume download
+     */
+    boolean resumeDownload(IDownloadableFile file);
 }

@@ -52,7 +52,7 @@ public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAl
                         i * chunkSize,
                         i == maxThreadCount - 1 ? -1 : chunkSize);
                 file.addPart(part);
-                dispatcher.submitTask(file, part);
+                dispatcher.submitNewTask(file, part);
             }
         } else { //single thread
             //noinspection ResultOfMethodCallIgnored
@@ -62,7 +62,7 @@ public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAl
                 part.setDownloadResumeNotSupported();
             }
             file.addPart(part);
-            dispatcher.submitTask(file, part);
+            dispatcher.submitNewTask(file, part);
         }
     }
 }

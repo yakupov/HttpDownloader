@@ -21,8 +21,10 @@ import static org.iyakupov.downloader.core.DownloadStatus.*;
  */
 public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlgorithm {
     private final static long SPEED_MEASURE_THRESHOLD = (long) 1e9; //in nS
+    private final static int BUFFER_SIZE = 4 * 1024; //4KBytes
 
     private final static Logger logger = LoggerFactory.getLogger(HttpPartDownloadCommunicationAlgorithm.class);
+
 
     private final int priority;
     private final IDispatchingQueue dispatcher;
@@ -44,8 +46,9 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
     @Override
     public void run() {
         try {
-            if (filePart.getStatus() != SUSPENDED && filePart.getStatus() != PENDING)
+            if (filePart.getStatus() != SUSPENDED && filePart.getStatus() != PENDING) {
                 return;
+            }
             logger.trace("Started task, file = " + filePart.getOutputFile());
             filePart.start();
 
@@ -65,7 +68,7 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
                 try (OutputStream outputFileStream = new FileOutputStream(filePart.getOutputFile(), true)) {
                     long bytesSinceLastMeasure = 0;
                     long lastMeasureTimestamp = System.nanoTime();
-                    final byte[] buffer = new byte[4096];
+                    final byte[] buffer = new byte[BUFFER_SIZE];
                     int lastRead;
                     while ((lastRead = inputStream.read(buffer)) >= 0) {
                         //Copy
@@ -132,6 +135,11 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
      * @throws IOException
      */
     private void combineTemporaryFiles(IDownloadableFileInt file) throws IOException {
+        if (file.getDownloadableParts().size() <= 1) {
+            file.markAsSaved();
+            return; //Already in the resulting file
+        }
+
         try (OutputStream outputFileStream = new FileOutputStream(file.getOutputFile())) {
             for (IDownloadableFilePart part : file.getDownloadableParts()) {
                 logger.trace("Copy data from " + part.getOutputFile() + " to " + file.getOutputFile());

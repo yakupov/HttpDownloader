@@ -62,4 +62,14 @@ public interface IDownloadableFilePartInt extends IDownloadableFilePart {
      * Set the flag, indicating that the server does not support partial download
      */
     void setDownloadResumeNotSupported();
+
+    /**
+     * Automatically suspend task because of the shortage of available threads
+     */
+    void suspend();
+
+    /**
+     * Set the status of PENDING to this task
+     */
+    void resumeDownload();
 }

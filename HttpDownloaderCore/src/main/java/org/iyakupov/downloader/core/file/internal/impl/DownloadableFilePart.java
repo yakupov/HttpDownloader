@@ -73,6 +73,13 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
     }
 
     @Override
+    public void resumeDownload() {
+        if (status != ERROR && status != DONE) {
+            status = PENDING;
+        }
+    }
+
+    @Override
     public void start() {
         if (status != ERROR && status != DONE) {
             if (!partialDownloadSupported)
@@ -84,6 +91,7 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
     @Override
     public void cancel() {
         status = CANCELLED;
+        outputFile.deleteOnExit();
     }
 
     @Override

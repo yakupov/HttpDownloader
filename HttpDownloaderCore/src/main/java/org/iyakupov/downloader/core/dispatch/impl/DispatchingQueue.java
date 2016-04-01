@@ -1,5 +1,6 @@
 package org.iyakupov.downloader.core.dispatch.impl;
 
+import com.google.common.collect.Sets;
 import org.iyakupov.downloader.core.DownloadStatus;
 import org.iyakupov.downloader.core.comms.ICommunicationAlgorithm;
 import org.iyakupov.downloader.core.comms.ICommunicationComponent;
@@ -15,8 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Queued thread pool, designed to process file download requests
@@ -25,9 +31,13 @@ public class DispatchingQueue implements IDispatchingQueue {
     public final static int DEFAULT_QUEUE_CAPACITY = 1000;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final ICommunicationComponent communicationComponent = new HttpCommunicationComponent();
-    private final Map<IDownloadableFilePartInt, IDownloadableFileInt> allTasks = new ConcurrentHashMap<>();
+
     private final ThreadPoolExecutor executor;
+    private final ICommunicationComponent communicationComponent = new HttpCommunicationComponent();
+
+    private final Lock taskAddLock = new ReentrantLock();
+    private final Map<IDownloadableFilePartInt, IDownloadableFileInt> partDownloadTasks = new ConcurrentHashMap<>();
+    private final Set<IDownloadableFile> knownFiles = Sets.newConcurrentHashSet();
 
     public DispatchingQueue(int maxNumberOfThreads) {
         this(maxNumberOfThreads, DEFAULT_QUEUE_CAPACITY);
@@ -52,10 +62,11 @@ public class DispatchingQueue implements IDispatchingQueue {
 
     @Override
     public IDownloadableFileInt getParentFile(IDownloadableFilePartInt part) {
-        return allTasks.get(part);
+        return partDownloadTasks.get(part);
     }
 
     private void submitDownloadRequest(IDownloadableFileInt file) {
+        knownFiles.add(file);
         executor.execute(new HttpDownloadCheckCommunicationAlgorithm(this, communicationComponent, file));
     }
 
@@ -65,10 +76,24 @@ public class DispatchingQueue implements IDispatchingQueue {
     }
 
     @Override
-    public void submitTask(IDownloadableFileInt file, IDownloadableFilePartInt part) {
-        allTasks.put(part, file);
-        executor.execute(new HttpPartDownloadCommunicationAlgorithm(10, this, communicationComponent, part));
-        //TODO: check for duplicates maybe?
+    public void submitNewTask(IDownloadableFileInt file, IDownloadableFilePartInt part) {
+        if (partDownloadTasks.containsKey(part)) {
+            throw new IllegalStateException("Trying to submit existing file part download task");
+        } else {
+            taskAddLock.lock();
+            //idea: even if we add a part download task at the same time as we delete the corresponding
+            //file download request, this task will get the status of CANCELLED.
+            //See another usage of this lock in forgetFile
+            if (knownFiles.contains(file)) {
+                partDownloadTasks.put(part, file);
+            } else {
+                logger.error("Failed to submit a part download task: parent file is not known. " +
+                        "Already deleted? File: " + file.getOutputFile());
+                return;
+            }
+            taskAddLock.unlock();
+            executor.execute(new HttpPartDownloadCommunicationAlgorithm(10, this, communicationComponent, part));
+        }
     }
 
     @Override
@@ -78,7 +103,7 @@ public class DispatchingQueue implements IDispatchingQueue {
 
         int tasksToEvict = executor.getActiveCount() - newSize;
 
-        for (IDownloadableFilePartInt part: allTasks.keySet()) {
+        for (IDownloadableFilePartInt part: partDownloadTasks.keySet()) {
             if (tasksToEvict-- <= 0)
                 break;
             if (part.getStatus() == DownloadStatus.DOWNLOADING && part.isDownloadResumeSupported()) {
@@ -88,7 +113,7 @@ public class DispatchingQueue implements IDispatchingQueue {
         }
 
         if (evictNonResumable && tasksToEvict > 0) {
-            for (IDownloadableFilePartInt part: allTasks.keySet()) {
+            for (IDownloadableFilePartInt part: partDownloadTasks.keySet()) {
                 if (tasksToEvict-- <= 0)
                     break;
                 if (part.getStatus() == DownloadStatus.DOWNLOADING) {
@@ -99,16 +124,48 @@ public class DispatchingQueue implements IDispatchingQueue {
         }
     }
 
-    //public void markFileAsCompleted(IDownloadableFileInt file) {
-        //TODO: remove from the Map or move to another storage... Or don't do anything.
-        //Need to define methods for manipulations (e.g. resumeDownload, cancel etc.) with files, managed by this dispatcher.
-        //Need to manage the entries of the parts map
-    //}
-
     @Override
     public IDownloadableFile submitFile(String url, File outputDir, int nThreads) {
         final DownloadableFile downloadableFile = new DownloadableFile(url, outputDir, nThreads);
         submitDownloadRequest(downloadableFile);
         return downloadableFile;
+    }
+
+    @Override
+    public Collection<IDownloadableFile> getAllFiles() {
+        return Collections.unmodifiableSet(knownFiles);
+    }
+
+    @Override
+    public boolean forgetFile(IDownloadableFile file) {
+        taskAddLock.lock();
+        file.cancel();
+        final boolean removed = knownFiles.remove(file);
+        taskAddLock.unlock();
+        if (removed) {
+            file.getDownloadableParts().stream().forEach(partDownloadTasks::remove);
+        }
+        return removed;
+    }
+
+    @Override
+    public boolean resumeDownload(IDownloadableFile file) {
+        if (file.getStatus() == DownloadStatus.PAUSED) {
+            if (!knownFiles.contains(file)) {
+                logger.error("Trying to resume download of a forgotten file. File is already deleted?");
+                return false;
+            }
+            file.getDownloadableParts().stream()
+                    .forEach(p -> {
+                                final IDownloadableFilePartInt partInt = (IDownloadableFilePartInt) p;
+                                partInt.resumeDownload();
+                                executor.execute(new HttpPartDownloadCommunicationAlgorithm(
+                                        5, this, communicationComponent, partInt));
+                            });
+            return true;
+        } else {
+            logger.error("Failed to resume - unexpected file status: " + file.getStatus());
+            return false;
+        }
     }
 }
