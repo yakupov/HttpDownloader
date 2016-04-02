@@ -8,7 +8,7 @@ import java.io.File;
 import java.util.Collection;
 
 /**
- * This is an interface to a queued thread pool, designed to process file download requests.
+ * Dispatcher that tracks, manages and executes file download requests and part download requests
  */
 public interface IDispatchingQueue {
     /**

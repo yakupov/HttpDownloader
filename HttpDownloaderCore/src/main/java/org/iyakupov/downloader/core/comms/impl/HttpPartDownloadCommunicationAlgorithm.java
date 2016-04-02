@@ -60,10 +60,10 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
                 filePart.updateTotalLength(communicationResult.getSize());
             }
 
-            if (communicationResult.getResponseDataStream() != null &&
-                    (communicationResult.getResponseCode() == CommunicationStatus.OK ||
-                            communicationResult.getResponseCode() == CommunicationStatus.PARTIAL_CONTENT_OK)) {
+            final boolean statusOk = communicationResult.getResponseCode() == CommunicationStatus.PARTIAL_CONTENT_OK ||
+                    !filePart.isDownloadResumeSupported() && communicationResult.getResponseCode() == CommunicationStatus.OK;
 
+            if (communicationResult.getResponseDataStream() != null && statusOk) {
                 final InputStream inputStream = communicationResult.getResponseDataStream();
                 try (OutputStream outputFileStream = new FileOutputStream(filePart.getOutputFile(), true)) {
                     long bytesSinceLastMeasure = 0;
@@ -99,10 +99,21 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
                         }
                     }
                 }
+            } else if (communicationResult.getResponseCode() == CommunicationStatus.OK) {
+                final String errorMessage = "Expected to be able to perform partial download of this file part, " +
+                        "but the server has returned unsuitable response code";
+                logger.error(errorMessage);
+                filePart.completeWithError(errorMessage);
+                return;
+            } else {
+                final String errorMessage = "Bad response code: " + communicationResult.getResponseCode();
+                logger.error(errorMessage);
+                filePart.completeWithError(errorMessage);
+                return;
             }
         } catch (FileNotFoundException e) {
-            logger.error("Failed to write to temporary file", e);
-            filePart.completeWithError("Failed to write to temporary file. File not found: " + e.getMessage());
+            logger.error("Failed to write to a temporary file. File not found.", e);
+            filePart.completeWithError("Failed to write to a temporary file. File not found: " + e.getMessage());
             return;
         } catch (IOException e) {
             logger.error("Failed to read from HTTP stream or to write to the temporary file stream", e);
@@ -120,6 +131,7 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
                     combineTemporaryFiles(file);
                 }
             } else {
+                logger.error("Stream has ended, but remaining length is greater than zero");
                 filePart.completeWithError("Stream has ended, but remaining length is greater than zero");
             }
         } catch (IOException e) {

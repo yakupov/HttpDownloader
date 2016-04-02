@@ -60,28 +60,28 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
 
     @Override
     public void pause() {
-        if (status != ERROR && status != DONE) {
+        if (status != CANCELLED && status != ERROR && status != DONE) {
             status = PAUSED;
         }
     }
 
     @Override
     public void suspend() {
-        if (status != ERROR && status != DONE) {
+        if (status != CANCELLED && status != ERROR && status != DONE) {
             status = SUSPENDED;
         }
     }
 
     @Override
     public void resumeDownload() {
-        if (status != ERROR && status != DONE) {
+        if (status != CANCELLED && status != ERROR && status != DONE) {
             status = PENDING;
         }
     }
 
     @Override
     public void start() {
-        if (status != ERROR && status != DONE) {
+        if (status != CANCELLED && status != ERROR && status != DONE) {
             if (!partialDownloadSupported)
                 downloadedBytesCount = 0;
             status = DOWNLOADING;
@@ -91,19 +91,20 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
     @Override
     public void cancel() {
         status = CANCELLED;
-        outputFile.deleteOnExit();
     }
 
     @Override
     public void completeSuccessfully() {
-        if (status != ERROR)
+        if (status != CANCELLED && status != ERROR)
             status = DONE;
     }
 
     @Override
     public void completeWithError(@NotNull String errorMessage) {
-        status = ERROR;
-        this.errorText = errorMessage;
+        if (status != CANCELLED) {
+            status = ERROR;
+            this.errorText = errorMessage;
+        }
     }
 
     @Nullable

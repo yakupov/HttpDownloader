@@ -9,6 +9,7 @@ import org.iyakupov.downloader.core.comms.impl.HttpDownloadCheckCommunicationAlg
 import org.iyakupov.downloader.core.comms.impl.HttpPartDownloadCommunicationAlgorithm;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
+import org.iyakupov.downloader.core.file.IDownloadableFilePart;
 import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
 import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
 import org.iyakupov.downloader.core.file.internal.impl.DownloadableFile;
@@ -45,17 +46,12 @@ public class DispatchingQueue implements IDispatchingQueue {
 
     public DispatchingQueue(int maxNumberOfThreads, int queueCapacity) {
         final BlockingQueue<Runnable> taskQueue = new PriorityBlockingQueue<>(queueCapacity, (o1, o2) -> {
-            if (o1 == o2)
-                return 0;
-            else if (o1 == null)
-                return -1;
-            else if (o2 == null)
-                return 1;
-            else if (o1 instanceof ICommunicationAlgorithm && o2 instanceof ICommunicationAlgorithm)
+            if (o1 instanceof ICommunicationAlgorithm && o2 instanceof ICommunicationAlgorithm)
                 return Integer.compare(((ICommunicationAlgorithm) o2).getPriority(), ((ICommunicationAlgorithm) o1).getPriority());
             else
                 return 0;
         });
+
         executor = new ThreadPoolExecutor(maxNumberOfThreads, maxNumberOfThreads, 60L, TimeUnit.SECONDS, taskQueue);
         executor.allowCoreThreadTimeOut(true);
     }
@@ -138,12 +134,21 @@ public class DispatchingQueue implements IDispatchingQueue {
 
     @Override
     public boolean forgetFile(IDownloadableFile file) {
+        final boolean shouldCancel = file.getStatus() != DownloadStatus.DONE;
+
         taskAddLock.lock();
-        file.cancel();
+        if (shouldCancel)
+            file.cancel();
         final boolean removed = knownFiles.remove(file);
         taskAddLock.unlock();
+
         if (removed) {
             file.getDownloadableParts().stream().forEach(partDownloadTasks::remove);
+            if (shouldCancel) {
+                file.getDownloadableParts().stream().map(IDownloadableFilePart::getOutputFile).forEach(File::delete);
+                //noinspection ResultOfMethodCallIgnored
+                file.getOutputFile().delete();
+            }
         }
         return removed;
     }
