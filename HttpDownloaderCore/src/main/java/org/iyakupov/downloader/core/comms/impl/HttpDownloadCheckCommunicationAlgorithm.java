@@ -54,7 +54,8 @@ public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAl
                 file.addPart(part);
                 dispatcher.submitNewTask(file, part);
             }
-        } else { //single thread
+        } else if (communicationResult.getResponseCode() == CommunicationStatus.PARTIAL_CONTENT_OK ||
+                communicationResult.getResponseCode() == CommunicationStatus.OK) { //single thread
             //noinspection ResultOfMethodCallIgnored
             file.getOutputFile().delete(); //TODO: create new file maybe?
             final DownloadableFilePart part = new DownloadableFilePart(file.getOutputFile(), file.getLocator(), 0, -1);
@@ -63,6 +64,8 @@ public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAl
             }
             file.addPart(part);
             dispatcher.submitNewTask(file, part);
+        } else {
+            logger.warn("Task " + file.getLocator() + " failed with RC = " + communicationResult.getResponseCode());
         }
     }
 }
