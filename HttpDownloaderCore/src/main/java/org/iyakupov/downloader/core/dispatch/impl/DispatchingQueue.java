@@ -34,8 +34,7 @@ public class DispatchingQueue implements IDispatchingQueue {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ThreadPoolExecutor executor;
-    private final ICommunicationComponent communicationComponent = new HttpCommunicationComponent();
-
+    private final ICommunicationComponent communicationComponent;
     private final Lock taskAddLock = new ReentrantLock();
     private final Map<IDownloadableFilePartInt, IDownloadableFileInt> partDownloadTasks = new ConcurrentHashMap<>();
     private final Set<IDownloadableFile> knownFiles = Sets.newConcurrentHashSet();
@@ -45,6 +44,10 @@ public class DispatchingQueue implements IDispatchingQueue {
     }
 
     public DispatchingQueue(int maxNumberOfThreads, int queueCapacity) {
+        this(maxNumberOfThreads, queueCapacity, new HttpCommunicationComponent());
+    }
+
+    public DispatchingQueue(int maxNumberOfThreads, int queueCapacity, ICommunicationComponent communicationComponent) {
         final BlockingQueue<Runnable> taskQueue = new PriorityBlockingQueue<>(queueCapacity, (o1, o2) -> {
             if (o1 instanceof ICommunicationAlgorithm && o2 instanceof ICommunicationAlgorithm)
                 return Integer.compare(((ICommunicationAlgorithm) o2).getPriority(), ((ICommunicationAlgorithm) o1).getPriority());
@@ -54,6 +57,8 @@ public class DispatchingQueue implements IDispatchingQueue {
 
         executor = new ThreadPoolExecutor(maxNumberOfThreads, maxNumberOfThreads, 60L, TimeUnit.SECONDS, taskQueue);
         executor.allowCoreThreadTimeOut(true);
+
+        this.communicationComponent = communicationComponent;
     }
 
     @Override
@@ -76,18 +81,21 @@ public class DispatchingQueue implements IDispatchingQueue {
         if (partDownloadTasks.containsKey(part)) {
             throw new IllegalStateException("Trying to submit existing file part download task");
         } else {
-            taskAddLock.lock();
-            //idea: even if we add a part download task at the same time as we delete the corresponding
-            //file download request, this task will get the status of CANCELLED.
-            //See another usage of this lock in forgetFile
-            if (knownFiles.contains(file)) {
-                partDownloadTasks.put(part, file);
-            } else {
-                logger.error("Failed to submit a part download task: parent file is not known. " +
-                        "Already deleted? File: " + file.getOutputFile());
-                return;
+            try {
+                taskAddLock.lock();
+                //idea: even if we add a part download task at the same time as we delete the corresponding
+                //file download request, this task will get the status of CANCELLED.
+                //See another usage of this lock in forgetFile
+                if (knownFiles.contains(file)) {
+                    partDownloadTasks.put(part, file);
+                } else {
+                    logger.error("Failed to submit a part download task: parent file is not known. " +
+                            "Already deleted? File: " + file.getOutputFile());
+                    return;
+                }
+            } finally {
+                taskAddLock.unlock();
             }
-            taskAddLock.unlock();
             executor.execute(new HttpPartDownloadCommunicationAlgorithm(10, this, communicationComponent, part));
         }
     }
@@ -103,7 +111,8 @@ public class DispatchingQueue implements IDispatchingQueue {
             if (tasksToEvict-- <= 0)
                 break;
             if (part.getStatus() == DownloadStatus.DOWNLOADING && part.isDownloadResumeSupported()) {
-                logger.warn("Evicted task because of the shortage of threads: " + part.getLocator());
+                logger.warn("Evicted task because of the shortage of threads: "
+                        + part.getLocator() + ", file = " + part.getOutputFile());
                 part.suspend();
             }
         }
@@ -113,7 +122,8 @@ public class DispatchingQueue implements IDispatchingQueue {
                 if (tasksToEvict-- <= 0)
                     break;
                 if (part.getStatus() == DownloadStatus.DOWNLOADING) {
-                    logger.warn("Evicted task because of the shortage of threads: " + part.getLocator());
+                    logger.warn("Evicted task because of the shortage of threads: "
+                            + part.getLocator() + ", file = " + part.getOutputFile());
                     part.suspend();
                 }
             }

@@ -130,7 +130,7 @@ public class FilePartDownloadTest {
             }
 
             if (expectedStates[i].actionOnFile != null)
-                //noinspection ConstantConditions //Incorrect inspection
+                //noinspection ConstantConditions //Incorrect NPE warning
                 expectedStates[i].actionOnFile.accept(file);
         }
 

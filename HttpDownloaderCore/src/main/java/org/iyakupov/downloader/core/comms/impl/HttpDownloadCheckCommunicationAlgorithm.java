@@ -30,7 +30,7 @@ public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAl
 
     @Override
     public int getPriority() {
-        return 0;
+        return 0; //TODO: priorities => enum
     }
 
     @Override

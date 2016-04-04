@@ -20,8 +20,8 @@ import static org.iyakupov.downloader.core.DownloadStatus.*;
  * This algorithm downloads data from HTTP stream to a temporary file
  */
 public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlgorithm {
-    private final static long SPEED_MEASURE_THRESHOLD = (long) 1e9; //in nS
-    private final static int BUFFER_SIZE = 4 * 1024; //4KBytes
+    public final static long SPEED_MEASURE_THRESHOLD = (long) 1e9; //in nS
+    public final static int BUFFER_SIZE = 4 * 1024; //4KBytes
 
     private final static Logger logger = LoggerFactory.getLogger(HttpPartDownloadCommunicationAlgorithm.class);
 
@@ -70,7 +70,7 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
                     long lastMeasureTimestamp = System.nanoTime();
                     final byte[] buffer = new byte[BUFFER_SIZE];
                     int lastRead;
-                    while ((lastRead = inputStream.read(buffer)) >= 0) {
+                    while ((lastRead = inputStream.read(buffer)) > 0) {
                         //Copy
                         outputFileStream.write(buffer, 0, lastRead);
                         outputFileStream.flush();
@@ -87,15 +87,19 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
                         }
 
                         //Check status
-                        if (filePart.getStatus() == PAUSED || filePart.getStatus() == CANCELLED) {
+                        if (filePart.getStatus() == CANCELLED) {
                             return;
-                        } else if (filePart.getStatus() == SUSPENDED) {
-                            logger.info("Task " + filePart.getOutputFile() + " evicted, re-submitting");
-                            dispatcher.submitEvictedTask(filePart);
-                            return;
-                        } else if (filePart.getStatus() != DOWNLOADING) {
-                            logger.error("Running task was suspended with an unexpected status: " + filePart.getStatus());
-                            return;
+                        } else if (filePart.getRemainingLength() > 0) {
+                            if (filePart.getStatus() == PAUSED) {
+                                return;
+                            } else if (filePart.getStatus() == SUSPENDED) {
+                                logger.info("Task " + filePart.getOutputFile() + " evicted, re-submitting");
+                                dispatcher.submitEvictedTask(filePart);
+                                return;
+                            } else if (filePart.getStatus() != DOWNLOADING) {
+                                logger.error("Running task was suspended with an unexpected status: " + filePart.getStatus());
+                                return;
+                            }
                         }
                     }
                 }
