@@ -72,4 +72,9 @@ public interface IDownloadableFilePartInt extends IDownloadableFilePart {
      * Set the status of PENDING to this task
      */
     void resumeDownload();
+
+    /**
+     * Set the status of PAUSE_CONFIRMED instead of PAUSED
+     */
+    void confirmPause();
 }

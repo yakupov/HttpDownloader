@@ -9,6 +9,7 @@ public enum DownloadStatus {
     DOWNLOADING,
     SUSPENDED,
     PAUSED,
+    PAUSE_CONFIRMED,
     ERROR,
     CANCELLED,
     UNSAVED,

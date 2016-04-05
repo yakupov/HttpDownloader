@@ -5,11 +5,9 @@ package org.iyakupov.downloader.core.comms;
  */
 public enum CommunicationStatus {
     NOT_STARTED,
-    IN_PROGRESS,
     PARTIAL_CONTENT_OK,
     PARTIAL_CONTENT_NOK,
     OK,
-    NO_RESOURCE,
     UNAVAILABLE,
     ERROR
 }

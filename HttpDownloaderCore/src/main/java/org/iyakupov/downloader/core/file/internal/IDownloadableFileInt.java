@@ -22,6 +22,11 @@ public interface IDownloadableFileInt extends IDownloadableFile {
     void markAsSaved();
 
     /**
+     * Sets status = ERROR
+     */
+    void errorHappened();
+
+    /**
      * This method should be called upon successful completion of download of a part of this file.
      * Two calls of this method may not return the same value.
      *

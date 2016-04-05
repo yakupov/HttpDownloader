@@ -26,32 +26,34 @@ import java.net.URL;
  * Downloads files via HTTP
  */
 public class HttpCommunicationComponent implements ICommunicationComponent {
+    public static final int DEFAULT_MAX_CONNECTIONS = 200;
+    public static final int DEFAULT_CONN_RQ_TIMEOUT = 3000;
+    public static final int DEFAULT_CONN_TIMEOUT = 3000;
+    public static final int DEFAULT_SOCKET_TIMEOUT = 6000;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final HttpClient httpClient;
     private final RequestConfig httpRequestConfig;
 
     public HttpCommunicationComponent() {
+        this(DEFAULT_MAX_CONNECTIONS, DEFAULT_CONN_RQ_TIMEOUT, DEFAULT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
+    }
+
+    public HttpCommunicationComponent(int maxConnections, int rqTimeout, int connTimeout, int socketTimeout) {
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        // Increase max total connection to 200
-        connectionManager.setMaxTotal(200);
-        // Increase default max connection per route to 20
-        connectionManager.setDefaultMaxPerRoute(200);
-        /*// Increase max connections for localhost:80 to 50
-        HttpHost localhost = new HttpHost("locahost", 80);
-        connectionManager.setMaxPerRoute(new HttpRoute(localhost), 50);
-        */
+        connectionManager.setMaxTotal(maxConnections);
+        connectionManager.setDefaultMaxPerRoute(maxConnections);
+
         httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .build();
 
         httpRequestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(3000)
-                .setConnectTimeout(3000)
-                .setSocketTimeout(6000)
+                .setConnectionRequestTimeout(rqTimeout)
+                .setConnectTimeout(connTimeout)
+                .setSocketTimeout(socketTimeout)
                 .build();
-
-        //TODO: parms
     }
 
     /**
@@ -97,7 +99,7 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
                 }
             } else {
                 logger.error("Download failed - bad HTTP status code: " + statusCode);
-                resultBuilder.setCommunicationStatus(CommunicationStatus.ERROR); //TODO: learn to return NO_RESOURCE
+                resultBuilder.setCommunicationStatus(CommunicationStatus.ERROR);
             }
         } catch (IOException e) {
             logger.error("Connection to the remote server has failed", e);
@@ -169,7 +171,7 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
                 }
             } else {
                 logger.error("Download failed - bad HTTP status code: " + statusCode);
-                resultBuilder.setCommunicationStatus(CommunicationStatus.ERROR); //TODO: learn to return NO_RESOURCE
+                resultBuilder.setCommunicationStatus(CommunicationStatus.ERROR);
             }
         } catch (URISyntaxException | MalformedURLException e) {
             throw new BadLocatorException("Incorrect URL", e);

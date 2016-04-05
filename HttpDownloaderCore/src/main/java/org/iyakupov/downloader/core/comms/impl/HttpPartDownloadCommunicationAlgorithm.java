@@ -25,7 +25,6 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
 
     private final static Logger logger = LoggerFactory.getLogger(HttpPartDownloadCommunicationAlgorithm.class);
 
-
     private final int priority;
     private final IDispatchingQueue dispatcher;
     private final ICommunicationComponent comm;
@@ -71,7 +70,12 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
                     final byte[] buffer = new byte[BUFFER_SIZE];
                     int lastRead;
                     while ((lastRead = inputStream.read(buffer)) > 0) {
+                        if (filePart.getRemainingLength() >= 0 && lastRead > filePart.getRemainingLength())
+                            logger.warn("End of file was expected (basing on content-length), but the stream " +
+                                    "has not ended. Continuing download...");
+
                         //Copy
+                        logger.trace("Wrote " + lastRead + " bytes to " + filePart.getOutputFile());
                         outputFileStream.write(buffer, 0, lastRead);
                         outputFileStream.flush();
 
@@ -91,6 +95,8 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
                             return;
                         } else if (filePart.getRemainingLength() > 0) {
                             if (filePart.getStatus() == PAUSED) {
+                                filePart.confirmPause();
+                                logger.trace("Task " + filePart.getOutputFile() + " paused, exiting worker");
                                 return;
                             } else if (filePart.getStatus() == SUSPENDED) {
                                 logger.info("Task " + filePart.getOutputFile() + " evicted, re-submitting");
@@ -126,6 +132,8 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
         } finally {
             filePart.setDownloadSpeed(0);
         }
+
+        logger.trace("Finished downloading part " + filePart.getOutputFile());
 
         try {
             if (filePart.getRemainingLength() <= 0) {

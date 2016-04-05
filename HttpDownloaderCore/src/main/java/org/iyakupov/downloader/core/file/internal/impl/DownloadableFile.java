@@ -24,6 +24,7 @@ public class DownloadableFile implements IDownloadableFileInt {
     private final int maxThreadCount;
 
     private volatile boolean fileSaved = false;
+    private volatile boolean errorHappened = false;
     private final AtomicInteger unsavedPartsCount = new AtomicInteger(0);
 
     private final List<IDownloadableFilePart> fileParts = new ArrayList<>();
@@ -48,6 +49,8 @@ public class DownloadableFile implements IDownloadableFileInt {
     public DownloadStatus getStatus() {
         if (fileSaved) {
             return DONE;
+        } else if (errorHappened) {
+            return ERROR;
         } else if (getDownloadableParts().isEmpty()) {
             return INITIATED;
         } else {
@@ -66,7 +69,7 @@ public class DownloadableFile implements IDownloadableFileInt {
                         isDownloading = true;
                     } else if (status == SUSPENDED) {
                         isSuspended = true;
-                    } else if (status == PAUSED) {
+                    } else if (status == PAUSED || status == PAUSE_CONFIRMED) {
                         isPaused = true;
                     }
                 }
@@ -134,6 +137,10 @@ public class DownloadableFile implements IDownloadableFileInt {
         }
     }
 
+    @Override
+    public void errorHappened() {
+        errorHappened = true;
+    }
 
     @Override
     public int decrementAndGetNonSuccessfullyDownloadedPartsCount() {

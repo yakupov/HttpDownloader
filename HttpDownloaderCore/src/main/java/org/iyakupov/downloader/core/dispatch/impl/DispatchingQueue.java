@@ -8,6 +8,7 @@ import org.iyakupov.downloader.core.comms.impl.HttpCommunicationComponent;
 import org.iyakupov.downloader.core.comms.impl.HttpDownloadCheckCommunicationAlgorithm;
 import org.iyakupov.downloader.core.comms.impl.HttpPartDownloadCommunicationAlgorithm;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
+import org.iyakupov.downloader.core.dispatch.TaskPriority;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
 import org.iyakupov.downloader.core.file.IDownloadableFilePart;
 import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
@@ -73,7 +74,7 @@ public class DispatchingQueue implements IDispatchingQueue {
 
     @Override
     public void submitEvictedTask(IDownloadableFilePartInt part) {
-        executor.execute(new HttpPartDownloadCommunicationAlgorithm(100, this, communicationComponent, part));
+        executor.execute(new HttpPartDownloadCommunicationAlgorithm(TaskPriority.EVICTED_TASK.getPriority(), this, communicationComponent, part));
     }
 
     @Override
@@ -96,7 +97,7 @@ public class DispatchingQueue implements IDispatchingQueue {
             } finally {
                 taskAddLock.unlock();
             }
-            executor.execute(new HttpPartDownloadCommunicationAlgorithm(10, this, communicationComponent, part));
+            executor.execute(new HttpPartDownloadCommunicationAlgorithm(TaskPriority.NEW_PART_DOWNLOAD.getPriority(), this, communicationComponent, part));
         }
     }
 
@@ -171,12 +172,14 @@ public class DispatchingQueue implements IDispatchingQueue {
                 return false;
             }
             file.getDownloadableParts().stream()
+                    .filter(p -> p.getStatus() == DownloadStatus.PAUSE_CONFIRMED)
                     .forEach(p -> {
-                                final IDownloadableFilePartInt partInt = (IDownloadableFilePartInt) p;
-                                partInt.resumeDownload();
-                                executor.execute(new HttpPartDownloadCommunicationAlgorithm(
-                                        5, this, communicationComponent, partInt));
-                            });
+                        final IDownloadableFilePartInt partInt = (IDownloadableFilePartInt) p;
+                        partInt.resumeDownload();
+                        logger.trace("Resuming part " + p.getOutputFile());
+                        executor.execute(new HttpPartDownloadCommunicationAlgorithm(
+                                TaskPriority.PAUSED_TASK.getPriority(), this, communicationComponent, partInt));
+                    });
             return true;
         } else {
             logger.error("Failed to resume - unexpected file status: " + file.getStatus());

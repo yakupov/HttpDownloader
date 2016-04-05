@@ -7,6 +7,7 @@ import org.iyakupov.downloader.core.comms.ICommunicationResult;
 import org.iyakupov.downloader.core.comms.impl.HttpCommunicationResult;
 import org.iyakupov.downloader.core.comms.impl.HttpPartDownloadCommunicationAlgorithm;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
+import org.iyakupov.downloader.core.dispatch.TaskPriority;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
 import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
 import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
@@ -120,7 +121,8 @@ public class FilePartDownloadTest {
                             i < desiredPartsCount - 1 ? chunkSize : chunkSize + fileSize % chunkSize));
 
             final ICommunicationAlgorithm communicationAlgorithm =
-                    new HttpPartDownloadCommunicationAlgorithm(10, dispatchingQueue, communicationComponent, partsArray[i]);
+                    new HttpPartDownloadCommunicationAlgorithm(TaskPriority.NEW_PART_DOWNLOAD.getPriority(),
+                            dispatchingQueue, communicationComponent, partsArray[i]);
             communicationAlgorithm.run();
 
             assertEquals(expectedStates[i].partStatus, partsArray[i].getStatus());
@@ -129,9 +131,12 @@ public class FilePartDownloadTest {
                 assertEquals(chunkSize, partsArray[i].getOutputFile().length());
             }
 
-            if (expectedStates[i].actionOnFile != null)
-                //noinspection ConstantConditions //Incorrect NPE warning
-                expectedStates[i].actionOnFile.accept(file);
+            if (expectedStates[i] != null) {
+                final ExpectedState currentState = expectedStates[i];
+                if (currentState != null && currentState.actionOnFile != null) {
+                    currentState.actionOnFile.accept(file);
+                }
+            }
         }
 
         if (file.getStatus() == DONE)

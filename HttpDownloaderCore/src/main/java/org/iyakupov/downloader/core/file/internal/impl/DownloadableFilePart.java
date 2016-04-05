@@ -80,10 +80,17 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
     }
 
     @Override
+    public void confirmPause() {
+        if (status == PAUSED)
+            status = PAUSE_CONFIRMED;
+    }
+
+    @Override
     public void start() {
         if (status != CANCELLED && status != ERROR && status != DONE) {
-            if (!partialDownloadSupported)
+            if (!partialDownloadSupported) {
                 downloadedBytesCount = 0;
+            }
             status = DOWNLOADING;
         }
     }
@@ -132,7 +139,7 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
 
     @Override
     public synchronized long getRemainingLength() {
-        if (length <= 0)
+        if (length < 0)
             return -1;
         else
             return length - downloadedBytesCount;
@@ -145,7 +152,7 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
 
     @Override
     public void updateTotalLength(long length) {
-        if (this.length <= 0)
+        if (this.length < 0)
             this.length = length;
     }
 
