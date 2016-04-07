@@ -2,47 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b1568d7b-3142-4ea0-935b-46165db51fae" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/new_download/DownloadRequest.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/settings/ISettingsModel.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__ch_qos_logback_logback_classic_1_1_6.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__ch_qos_logback_logback_core_1_1_6.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__com_google_guava_guava_19_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__com_intellij_annotations_12_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__commons_codec_commons_codec_1_9.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__commons_io_commons_io_2_4.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__commons_logging_commons_logging_1_2.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__junit_junit_4_12.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__org_apache_httpcomponents_httpclient_4_5_2.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__org_apache_httpcomponents_httpcore_4_4_4.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__org_hamcrest_hamcrest_core_1_3.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__org_mockito_mockito_all_1_9_5.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/libraries/Maven__org_slf4j_slf4j_api_1_7_19.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/settings/SettingsController.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/settings/SettingsModel.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/resources/logback.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/settings/settings.fxml" />
-      <change type="DELETED" beforePath="C:\git_dld\HttpDownloaderApp\.idea\ant.xml" afterPath="" />
-      <change type="DELETED" beforePath="C:\git_dld\HttpDownloaderApp\.idea\description.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\git_dld\HttpDownloaderApp\.idea\gradle.xml" afterPath="" />
-      <change type="DELETED" beforePath="C:\git_dld\HttpDownloaderApp\src\main\java\org\iyakupov\downloader\gui\main_window\TestEnum.java" afterPath="" />
-      <change type="DELETED" beforePath="C:\git_dld\HttpDownloaderApp\src\main\java\org\iyakupov\downloader\gui\main_window\TestModel.java" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/HttpDownloaderApp.iml" afterPath="$PROJECT_DIR$/HttpDownloaderApp.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/HttpDownloaderCore.iml" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/HttpDownloaderCore.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/main_window/Main.java" afterPath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/main_window/Main.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/main_window/MainController.java" afterPath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/main_window/MainController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/new_download/NewDownloadController.java" afterPath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/new_download/NewDownloadController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/compiler.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/compiler.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/encodings.xml" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml" afterPath="$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/new_download/newDownload.fxml" afterPath="$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/new_download/newDownload.fxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/workspace.xml" />
     </list>
     <ignored path="HttpDownloaderApp.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -725,6 +685,13 @@
       <option name="number" value="Default" />
       <updated>1460054222789</updated>
     </task>
+    <task id="LOCAL-00001" summary="Work in progress. Settings window and new download request window seem to be ok.">
+      <created>1460061142747</created>
+      <option name="number" value="00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1460061142747</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -758,6 +725,12 @@
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="Work in progress. Settings window and new download request window seem to be ok." />
+    <option name="LAST_COMMIT_MESSAGE" value="Work in progress. Settings window and new download request window seem to be ok." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
