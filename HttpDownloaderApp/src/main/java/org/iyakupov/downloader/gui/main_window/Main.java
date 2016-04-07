@@ -27,8 +27,8 @@ public class Main extends Application {
         final FXMLLoader fxmlLoader = new FXMLLoader();
         final Pane root = fxmlLoader.load(MainController.class.getResource("main.fxml").openStream());
         primaryStage.setTitle("Downloader");
-        final Scene scene0 = new Scene(root); //TODO: default size needed?
-        primaryStage.setScene(scene0);
+        final Scene scene = new Scene(root); //TODO: default size needed?
+        primaryStage.setScene(scene);
         primaryStage.setOnCloseRequest(event -> {
             try {
                 fxmlLoader.<MainController>getController().close();
@@ -38,46 +38,10 @@ public class Main extends Application {
             Platform.exit();
         });
         primaryStage.show();
-/*
-        //Test stage/scene switch
-
-        //1
-        final StackPane stackPane1 = new StackPane();
-        final Scene scene1 = new Scene(stackPane1, 300, 300);
-        final Button button = new Button("xxx");
-        stackPane1.getChildren().add(button);
-
-        final Stage testStage = new Stage();
-        testStage.setScene(scene1);
-        //testStage.show();
-
-        //2
-        final StackPane stackPane2 = new StackPane();
-        final Scene scene2 = new Scene(stackPane2, 800, 600);
-        stackPane2.getChildren().add(new Button("SC2"));
-
-        button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                if (primaryStage.getScene() == scene2) {
-                    primaryStage.setScene(scene0);
-                    System.out.println("ok");
-                } else {
-                    primaryStage.setScene(scene2);
-                    System.out.println("ok");
-                }
-                event.consume();
-            }
-        });*/
     }
 
 
     public static void main(String[] args) {
-        IDispatchingQueue q = new DispatchingQueue(10);
-        ObservableList<IDownloadableFile> l = FXCollections.observableArrayList(q.getAllFiles());
-//TODO: cleanup
-
-
         launch(args);
     }
 }

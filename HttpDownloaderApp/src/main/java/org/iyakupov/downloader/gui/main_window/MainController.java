@@ -2,8 +2,6 @@ package org.iyakupov.downloader.gui.main_window;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
@@ -39,8 +37,6 @@ public class MainController implements Initializable, Closeable {
 
     private final SettingsModel settingsModel = new SettingsModel();
     private final IDispatchingQueue dispatcher = new DispatchingQueue(SettingsModel.DEFAULT_WORKER_THREADS_COUNT_PER_FILE);
-    private final ObservableList<IDownloadableFile> downloadableFilesList = FXCollections.observableArrayList();
-    //private final Timer tableRefreshTimer = new Timer();
     private Timeline tableRefreshTimeline;
 
     //FXML items
@@ -97,23 +93,12 @@ public class MainController implements Initializable, Closeable {
             dispatcher.setThreadPoolSize(newValue.intValue(), false);
         });
 
-        allTasksTableView.setItems(downloadableFilesList);
-
         tableRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-            allTasksTableView.setItems(FXCollections.observableArrayList(dispatcher.getAllFiles())); //FIXME
+            allTasksTableView.getItems().clear();
+            allTasksTableView.getItems().addAll(dispatcher.getAllFiles());
         }));
         tableRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
         tableRefreshTimeline.play();
-
-        /*
-        tableRefreshTimer.schedule(
-                new TimerTask() {
-                    @Override
-                    public void run() {
-                        //allTasksTableView.setItems(downloadableFilesList); //FIXME
-                        allTasksTableView.setItems(FXCollections.observableArrayList(dispatcher.getAllFiles())); //FIXME
-                    }
-                }, 0, 1000);*/
     }
 
     @NotNull
@@ -123,34 +108,13 @@ public class MainController implements Initializable, Closeable {
 
     public void submitDownloadRequest(@NotNull DownloadRequest request) {
         logger.trace("New download request submitted: " + request);
-
-        final IDownloadableFile downloadableFile = dispatcher.submitFile(request.getUrl(), request.getOutputDir(), request.getNumberOfThreads());
-
-        downloadableFilesList.add(downloadableFile);
-
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        logger.trace(downloadableFile.getProgress() + "_" + downloadableFile.getStatus());
-        logger.trace(downloadableFile.getDownloadableParts().size() + "");
-        logger.trace(downloadableFile.getDownloadableParts().get(0).getProgress() + "");
-
-
-
-
-        //allTasksTableView.setItems(downloadableFilesList);
-
-        //TODO
+        dispatcher.submitFile(request.getUrl(), request.getOutputDir(), request.getNumberOfThreads());
     }
-
 
     @Override
     public void close() throws IOException {
         dispatcher.close();
-        //tableRefreshTimer.cancel();
-        tableRefreshTimeline.stop();
+        if (tableRefreshTimeline != null)
+            tableRefreshTimeline.stop();
     }
 }

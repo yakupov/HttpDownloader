@@ -2,45 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="79e72841-4793-4540-bd38-5b6f7bca3005" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/new_download/DownloadRequest.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/settings/ISettingsModel.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__ch_qos_logback_logback_classic_1_1_6.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__ch_qos_logback_logback_core_1_1_6.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_guava_19_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_intellij_annotations_12_0.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__commons_codec_commons_codec_1_9.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__commons_io_commons_io_2_4.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__commons_logging_commons_logging_1_2.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__junit_junit_4_12.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_httpcomponents_httpclient_4_5_2.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_httpcomponents_httpcore_4_4_4.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_hamcrest_hamcrest_core_1_3.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_mockito_mockito_all_1_9_5.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_slf4j_slf4j_api_1_7_19.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/settings/SettingsController.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/settings/SettingsModel.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/logback.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/org/iyakupov/downloader/gui/settings/settings.fxml" />
-      <change type="DELETED" beforePath="C:\git_dld\HttpDownloaderApp\.idea\ant.xml" afterPath="" />
-      <change type="DELETED" beforePath="C:\git_dld\HttpDownloaderApp\.idea\description.html" afterPath="" />
-      <change type="DELETED" beforePath="C:\git_dld\HttpDownloaderApp\.idea\gradle.xml" afterPath="" />
-      <change type="DELETED" beforePath="C:\git_dld\HttpDownloaderApp\src\main\java\org\iyakupov\downloader\gui\main_window\TestEnum.java" afterPath="" />
-      <change type="DELETED" beforePath="C:\git_dld\HttpDownloaderApp\src\main\java\org\iyakupov\downloader\gui\main_window\TestModel.java" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/HttpDownloaderApp.iml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/HttpDownloaderApp.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/HttpDownloaderCore.iml" afterPath="$PROJECT_DIR$/HttpDownloaderCore.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/main_window/Main.java" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/main_window/Main.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/main_window/MainController.java" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/main_window/MainController.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/new_download/NewDownloadController.java" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/new_download/NewDownloadController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/compiler.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/compiler.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/encodings.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/encodings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/misc.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/modules.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/modules.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/org/iyakupov/downloader/gui/new_download/newDownload.fxml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/org/iyakupov/downloader/gui/new_download/newDownload.fxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/pom.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/uiDesigner.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/uiDesigner.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/vcs.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/vcs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/logback.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/logback.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -69,28 +34,38 @@
         <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="180" column="37" selection-start-line="180" selection-start-column="37" selection-end-line="180" selection-end-column="37" />
-              <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#1990#1991#0" expanded="false" />
-                <element signature="e#2054#2055#0" expanded="false" />
-                <element signature="e#3057#3058#0" expanded="false" />
-                <element signature="e#3107#3108#0" expanded="false" />
-                <element signature="e#6336#6337#0" expanded="false" />
-                <element signature="e#6398#6399#0" expanded="false" />
-              </folding>
+              <caret line="193" column="21" selection-start-line="193" selection-start-column="21" selection-end-line="193" selection-end-column="21" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="FilePartDownloadTest.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/FilePartDownloadTest.java">
+      <file leaf-file-name="DispatcherTest.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/DispatcherTest.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="124" column="28" selection-start-line="124" selection-start-column="28" selection-end-line="124" selection-end-column="28" />
-              <folding>
-                <element signature="imports" expanded="false" />
-              </folding>
+              <caret line="127" column="54" selection-start-line="127" selection-start-column="54" selection-end-line="127" selection-end-column="54" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ThreadPoolExecutor.java" pinned="false" current-in-tab="false">
+        <entry file="jar://C:/Program Files/Java/jdk1.8.0_45/src.zip!/java/util/concurrent/ThreadPoolExecutor.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="1413" column="26" selection-start-line="1413" selection-start-column="26" selection-end-line="1413" selection-end-column="26" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="IDispatchingQueue.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/IDispatchingQueue.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="13" column="53" selection-start-line="13" selection-start-column="53" selection-end-line="13" selection-end-column="53" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -110,10 +85,31 @@
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
               <caret line="61" column="71" selection-start-line="61" selection-start-column="71" selection-end-line="61" selection-end-column="71" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="DownloadableFilePart.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFilePart.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="106" column="42" selection-start-line="106" selection-start-column="42" selection-end-line="106" selection-end-column="42" />
               <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#1465#1466#0" expanded="false" />
-                <element signature="e#1524#1525#0" expanded="false" />
+                <element signature="e#3009#3010#0" expanded="true" />
+                <element signature="e#3041#3042#0" expanded="true" />
+                <element signature="e#3103#3104#0" expanded="true" />
+                <element signature="e#3136#3137#0" expanded="true" />
+                <element signature="e#3197#3198#0" expanded="true" />
+                <element signature="e#3227#3228#0" expanded="true" />
+                <element signature="e#3299#3300#0" expanded="true" />
+                <element signature="e#3350#3351#0" expanded="true" />
+                <element signature="e#3620#3621#0" expanded="true" />
+                <element signature="e#3664#3665#0" expanded="true" />
+                <element signature="e#3861#3862#0" expanded="true" />
+                <element signature="e#3908#3909#0" expanded="true" />
+                <element signature="e#3973#3974#0" expanded="true" />
+                <element signature="e#4021#4022#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -129,63 +125,22 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="HttpCommunicationComponent.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ManualDownloaderTest.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/ManualDownloaderTest.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.24028268">
+              <caret line="23" column="123" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="123" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="HttpCommunicationComponent.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpCommunicationComponent.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.39045936">
+            <state vertical-scroll-proportion="0.0">
               <caret line="33" column="35" selection-start-line="33" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="CommunicationStatus.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/comms/CommunicationStatus.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TaskPriority.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/TaskPriority.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="5" column="12" selection-start-line="5" selection-start-column="12" selection-end-line="5" selection-end-column="12" />
-              <folding>
-                <element signature="e#280#281#0" expanded="false" />
-                <element signature="e#320#321#0" expanded="false" />
-                <element signature="e#352#353#0" expanded="false" />
-                <element signature="e#383#384#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IDownloadableFileInt.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/IDownloadableFileInt.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="24" column="24" selection-start-line="24" selection-start-column="24" selection-end-line="24" selection-end-column="24" />
-              <folding>
-                <element signature="imports" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="HttpPartDownloadCommunicationAlgorithm.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpPartDownloadCommunicationAlgorithm.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="170" column="18" selection-start-line="170" selection-start-column="18" selection-end-line="170" selection-end-column="18" />
-              <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#1697#1698#0" expanded="false" />
-                <element signature="e#1728#1729#0" expanded="false" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -242,20 +197,20 @@
         <option value="$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/ManualDownloaderTest.java" />
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/FilePartCreationTest.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/IDispatchingQueue.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/DownloadStatus.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/IDownloadableFilePartInt.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFilePart.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpPartDownloadCommunicationAlgorithm.java" />
         <option value="$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/DispatcherTest.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/IDownloadableFileInt.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFile.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/TaskPriority.java" />
         <option value="$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/FilePartDownloadTest.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpDownloadCheckCommunicationAlgorithm.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/comms/CommunicationStatus.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpCommunicationComponent.java" />
+        <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFilePart.java" />
+        <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/IDispatchingQueue.java" />
+        <option value="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.java" />
       </list>
     </option>
   </component>
@@ -1250,15 +1205,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="180" column="37" selection-start-line="180" selection-start-column="37" selection-end-line="180" selection-end-column="37" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#1990#1991#0" expanded="false" />
-            <element signature="e#2054#2055#0" expanded="false" />
-            <element signature="e#3057#3058#0" expanded="false" />
-            <element signature="e#3107#3108#0" expanded="false" />
-            <element signature="e#6336#6337#0" expanded="false" />
-            <element signature="e#6398#6399#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1284,11 +1231,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="61" column="71" selection-start-line="61" selection-start-column="71" selection-end-line="61" selection-end-column="71" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#1465#1466#0" expanded="false" />
-            <element signature="e#1524#1525#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1355,15 +1298,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="180" column="37" selection-start-line="180" selection-start-column="37" selection-end-line="180" selection-end-column="37" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#1990#1991#0" expanded="false" />
-            <element signature="e#2054#2055#0" expanded="false" />
-            <element signature="e#3057#3058#0" expanded="false" />
-            <element signature="e#3107#3108#0" expanded="false" />
-            <element signature="e#6336#6337#0" expanded="false" />
-            <element signature="e#6398#6399#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1381,6 +1316,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="127" column="54" selection-start-line="127" selection-start-column="54" selection-end-line="127" selection-end-column="54" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1396,11 +1332,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#1465#1466#0" expanded="false" />
-            <element signature="e#1524#1525#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1504,20 +1436,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/ManualDownloaderTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="16" column="32" selection-start-line="16" selection-start-column="32" selection-end-line="16" selection-end-column="32" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/IDispatchingQueue.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="53" column="22" selection-start-line="53" selection-start-column="22" selection-end-line="53" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/junit/junit/4.12/junit-4.12.jar!/org/junit/Assert.class">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.3535109">
@@ -1567,13 +1485,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFilePart.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="84" column="37" selection-start-line="84" selection-start-column="37" selection-end-line="84" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/commons-io/commons-io/2.4/commons-io-2.4.jar!/org/apache/commons/io/FileUtils.class">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-12.28">
@@ -1585,13 +1496,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="64" column="55" selection-start-line="64" selection-start-column="55" selection-end-line="64" selection-end-column="55" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/DispatcherTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="127" column="54" selection-start-line="127" selection-start-column="54" selection-end-line="127" selection-end-column="54" />
         </state>
       </provider>
     </entry>
@@ -1627,22 +1531,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="180" column="37" selection-start-line="180" selection-start-column="37" selection-end-line="180" selection-end-column="37" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#1990#1991#0" expanded="false" />
-            <element signature="e#2054#2055#0" expanded="false" />
-            <element signature="e#3057#3058#0" expanded="false" />
-            <element signature="e#3107#3108#0" expanded="false" />
-            <element signature="e#6336#6337#0" expanded="false" />
-            <element signature="e#6398#6399#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/TaskPriority.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1664,14 +1552,49 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFile.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="52" column="25" selection-start-line="52" selection-start-column="25" selection-end-line="52" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpCommunicationComponent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="33" column="35" selection-start-line="33" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpDownloadCheckCommunicationAlgorithm.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="61" column="71" selection-start-line="61" selection-start-column="71" selection-end-line="61" selection-end-column="71" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFilePart.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="106" column="42" selection-start-line="106" selection-start-column="42" selection-end-line="106" selection-end-column="42" />
           <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#1465#1466#0" expanded="false" />
-            <element signature="e#1524#1525#0" expanded="false" />
+            <element signature="e#3009#3010#0" expanded="true" />
+            <element signature="e#3041#3042#0" expanded="true" />
+            <element signature="e#3103#3104#0" expanded="true" />
+            <element signature="e#3136#3137#0" expanded="true" />
+            <element signature="e#3197#3198#0" expanded="true" />
+            <element signature="e#3227#3228#0" expanded="true" />
+            <element signature="e#3299#3300#0" expanded="true" />
+            <element signature="e#3350#3351#0" expanded="true" />
+            <element signature="e#3620#3621#0" expanded="true" />
+            <element signature="e#3664#3665#0" expanded="true" />
+            <element signature="e#3861#3862#0" expanded="true" />
+            <element signature="e#3908#3909#0" expanded="true" />
+            <element signature="e#3973#3974#0" expanded="true" />
+            <element signature="e#4021#4022#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1684,18 +1607,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFile.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/IDispatchingQueue.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="52" column="25" selection-start-line="52" selection-start-column="25" selection-end-line="52" selection-end-column="25" />
+          <caret line="13" column="53" selection-start-line="13" selection-start-column="53" selection-end-line="13" selection-end-column="53" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpCommunicationComponent.java">
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_45/src.zip!/java/util/concurrent/ThreadPoolExecutor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.39045936">
-          <caret line="33" column="35" selection-start-line="33" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1413" column="26" selection-start-line="1413" selection-start-column="26" selection-end-line="1413" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="193" column="21" selection-start-line="193" selection-start-column="21" selection-end-line="193" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/DispatcherTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="127" column="54" selection-start-line="127" selection-start-column="54" selection-end-line="127" selection-end-column="54" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/ManualDownloaderTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.24028268">
+          <caret line="23" column="123" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="123" />
           <folding />
         </state>
       </provider>

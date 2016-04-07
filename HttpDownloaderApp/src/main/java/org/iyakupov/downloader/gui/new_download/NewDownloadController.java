@@ -28,7 +28,7 @@ public class NewDownloadController implements Initializable {
     public TextField nThreadsTextField;
     public TextField urlTextField;
 
-    public void directoryChooseButtonPressed(ActionEvent actionEvent) {
+    public void directoryChooseButtonPressed() {
         final DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Choose the directory for output files");
         final File dir = chooser.showDialog(new Stage());
@@ -40,7 +40,7 @@ public class NewDownloadController implements Initializable {
         }
     }
 
-    public void submitButtonPressed(ActionEvent actionEvent) {
+    public void submitButtonPressed() {
         if (mainController != null) {
             try {
                 final File outputDir = new File(outDirTextField.getText());
