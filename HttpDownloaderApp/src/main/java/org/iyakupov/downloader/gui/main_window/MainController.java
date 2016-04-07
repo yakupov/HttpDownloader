@@ -2,14 +2,12 @@ package org.iyakupov.downloader.gui.main_window;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.event.ActionEvent;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -29,6 +27,8 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -45,6 +45,7 @@ public class MainController implements Initializable, Closeable {
     public TableView<IDownloadableFile> allTasksTableView;
     public MenuItem newDownloadMenuItem;
     public MenuItem settingsMenuItem;
+    public Label totalProgressCounterLabel;
 
     public void openFileSubmitDialog() {
         try {
@@ -95,9 +96,20 @@ public class MainController implements Initializable, Closeable {
             dispatcher.setThreadPoolSize(newValue.intValue(), false);
         });
 
+        allTasksTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
         tableRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            final List<IDownloadableFile> oldSelection = new ArrayList<>(allTasksTableView.getSelectionModel().getSelectedItems());
             allTasksTableView.getItems().clear();
             allTasksTableView.getItems().addAll(dispatcher.getAllFiles());
+            oldSelection.forEach(s -> {
+                if (dispatcher.getAllFiles().contains(s))
+                    allTasksTableView.getSelectionModel().select(s);
+            });
+            final double totalProgress = dispatcher.getAllFiles().stream()
+                    .mapToDouble(IDownloadableFile::getProgress)
+                    .average().orElse(0);
+            totalProgressCounterLabel.setText(String.valueOf(totalProgress));
         }));
         tableRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
         tableRefreshTimeline.play();
@@ -120,28 +132,26 @@ public class MainController implements Initializable, Closeable {
             tableRefreshTimeline.stop();
     }
 
-    public void pauseTask(ActionEvent actionEvent) {
-        logger.info("Cancel pressed");
-        final IDownloadableFile selectedFile = allTasksTableView.getSelectionModel().getSelectedItem();
-        if (selectedFile != null) {
-            selectedFile.pause();
-            logger.info("Cancel processed");
-        }
+    public void pauseTasks() {
+        final List<IDownloadableFile> selectedFiles = allTasksTableView.getSelectionModel().getSelectedItems();
+        selectedFiles.forEach(IDownloadableFile::pause);
     }
 
-    public void resumeTask(ActionEvent actionEvent) {
-        final IDownloadableFile selectedFile = allTasksTableView.getSelectionModel().getSelectedItem();
-        if (selectedFile != null) {
-            if (selectedFile.getStatus() == DownloadStatus.PAUSED)
-                dispatcher.resumeDownload(selectedFile);
-        }
+    public void resumeTasks() {
+        final List<IDownloadableFile> selectedFiles = allTasksTableView.getSelectionModel().getSelectedItems();
+        selectedFiles.stream().filter(f -> f.getStatus() == DownloadStatus.PAUSED).forEach(dispatcher::resumeDownload);
     }
 
-    public void cancelTask(ActionEvent actionEvent) {
-        final IDownloadableFile selectedFile = allTasksTableView.getSelectionModel().getSelectedItem();
-        if (selectedFile != null) {
-            selectedFile.cancel();
-            dispatcher.forgetFile(selectedFile);
-        }
+    public void cancelTasks() {
+        final List<IDownloadableFile> selectedFiles = allTasksTableView.getSelectionModel().getSelectedItems();
+        selectedFiles.forEach(f -> {
+            f.cancel();
+            dispatcher.forgetFile(f);
+        });
+    }
+
+    public void closeApp() throws IOException {
+        close();
+        Platform.exit();
     }
 }

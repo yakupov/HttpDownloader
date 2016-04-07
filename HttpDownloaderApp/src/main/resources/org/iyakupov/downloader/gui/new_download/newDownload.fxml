@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="400.0" spacing="10.0"
       fx:controller="org.iyakupov.downloader.gui.new_download.NewDownloadController"
       xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-    <children>
-        <Label text="Enter the URL here:" />
-        <TextField fx:id="urlTextField"/>
-        <Label text="Enter the number of worker threads here:" />
-        <TextField fx:id="nThreadsTextField" />
-        <Label text="Enter the output directory here:" />
-        <TextField fx:id="outDirTextField" />
-        <Button minWidth="150.0" mnemonicParsing="false" text="Choose output directory" onAction="#directoryChooseButtonPressed" />
-        <Separator prefWidth="200.0" />
-        <Button minWidth="150.0" mnemonicParsing="false" text="Submit" onAction="#submitButtonPressed" />
-    </children>
+    <Label text="Enter the URL here:"/>
+    <TextField fx:id="urlTextField"/>
+    <Label text="Enter the number of worker threads here:"/>
+    <TextField fx:id="nThreadsTextField"/>
+    <Label text="Enter the output directory here:"/>
+    <TextField fx:id="outDirTextField"/>
+    <Button minWidth="150.0" mnemonicParsing="false" text="Choose output directory"
+            onAction="#directoryChooseButtonPressed"/>
+    <Separator prefWidth="200.0"/>
+    <Button minWidth="150.0" mnemonicParsing="false" text="Submit" onAction="#submitButtonPressed"/>
 </VBox>

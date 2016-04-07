@@ -149,17 +149,24 @@ public class DispatchingQueue implements IDispatchingQueue {
         final boolean shouldCancel = file.getStatus() != DownloadStatus.DONE;
 
         taskAddLock.lock();
-        if (shouldCancel)
-            file.cancel();
-        final boolean removed = knownFiles.remove(file);
-        taskAddLock.unlock();
+        boolean removed = false;
+        try {
+            if (shouldCancel)
+                file.cancel();
+            removed = knownFiles.remove(file);
+        } finally {
+            taskAddLock.unlock();
+        }
 
         if (removed) {
             file.getDownloadableParts().stream().forEach(partDownloadTasks::remove);
             if (shouldCancel) {
-                file.getDownloadableParts().stream().map(IDownloadableFilePart::getOutputFile).forEach(File::delete);
-                //noinspection ResultOfMethodCallIgnored
-                file.getOutputFile().delete();
+                file.getDownloadableParts().stream().map(IDownloadableFilePart::getOutputFile).forEach(f -> {
+                    if (!f.delete())
+                        f.deleteOnExit();
+                });
+                if (!file.getOutputFile().delete())
+                    file.getOutputFile().deleteOnExit();
             }
         }
         return removed;

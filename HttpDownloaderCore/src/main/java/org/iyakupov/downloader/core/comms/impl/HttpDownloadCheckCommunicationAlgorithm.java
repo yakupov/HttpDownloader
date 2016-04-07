@@ -68,6 +68,7 @@ public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAl
                 dispatcher.submitNewTask(file, part);
             } else {
                 logger.warn("Task " + file.getLocator() + " failed with RC = " + communicationResult.getResponseCode());
+                file.errorHappened();
             }
         } catch (IOException e) {
             logger.error("Failed to remove old temporary file", e);
