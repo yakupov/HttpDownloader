@@ -2,6 +2,7 @@ package org.iyakupov.downloader.gui.new_download;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
@@ -40,12 +41,16 @@ public class NewDownloadController implements Initializable {
         }
     }
 
-    public void submitButtonPressed() {
+    public void submitButtonPressed(ActionEvent actionEvent) {
         if (mainController != null) {
             try {
                 final File outputDir = new File(outDirTextField.getText());
                 final int nThreads = Integer.parseInt(nThreadsTextField.getText());
                 mainController.submitDownloadRequest(new DownloadRequest(outputDir, urlTextField.getText(), nThreads));
+
+                final Node source = (Node) actionEvent.getSource();
+                final Stage stage = (Stage) source.getScene().getWindow();
+                stage.close();
             } catch (Exception e) {
                 logger.error("Failed to submit the download request", e);
                 final Alert alert = new Alert(Alert.AlertType.ERROR);

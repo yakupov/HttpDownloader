@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="79e72841-4793-4540-bd38-5b6f7bca3005" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/main_window/Main.java" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/main_window/Main.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/main_window/MainController.java" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/main_window/MainController.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/new_download/NewDownloadController.java" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/new_download/NewDownloadController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/logback.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/logback.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/settings/SettingsController.java" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/java/org/iyakupov/downloader/gui/settings/SettingsController.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderApp/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -34,7 +34,7 @@
         <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="193" column="21" selection-start-line="193" selection-start-column="21" selection-end-line="193" selection-end-column="21" />
+              <caret line="175" column="67" selection-start-line="175" selection-start-column="67" selection-end-line="175" selection-end-column="67" />
               <folding />
             </state>
           </provider>
@@ -73,8 +73,8 @@
       <file leaf-file-name="DownloadableFile.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFile.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="52" column="25" selection-start-line="52" selection-start-column="25" selection-end-line="52" selection-end-column="25" />
+            <state vertical-scroll-proportion="-6.172414">
+              <caret line="108" column="16" selection-start-line="108" selection-start-column="11" selection-end-line="108" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -128,8 +128,8 @@
       <file leaf-file-name="ManualDownloaderTest.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/ManualDownloaderTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.24028268">
-              <caret line="23" column="123" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="123" />
+            <state vertical-scroll-proportion="0.4204947">
+              <caret line="23" column="76" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="123" />
               <folding />
             </state>
           </provider>
@@ -977,6 +977,38 @@
       <option name="PORT" value="5005" />
       <method />
     </configuration>
+    <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <extension name="scalaCoverage" />
+      <module name="" />
+      <setting name="path" value="" />
+      <setting name="package" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workingDirectory" value="$PROJECT_DIR$" />
+      <setting name="searchForTest" value="Across module dependencies" />
+      <setting name="testName" value="" />
+      <setting name="testKind" value="Class" />
+      <setting name="showProgressMessages" value="true" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="Specs2RunConfiguration" factoryName="Specs2">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <extension name="scalaCoverage" />
+      <module name="" />
+      <setting name="path" value="" />
+      <setting name="package" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workingDirectory" value="$PROJECT_DIR$" />
+      <setting name="searchForTest" value="Across module dependencies" />
+      <setting name="testName" value="" />
+      <setting name="testKind" value="Class" />
+      <setting name="showProgressMessages" value="true" />
+      <envs />
+      <method />
+    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <module name="" />
@@ -1003,6 +1035,22 @@
       <envs />
       <properties />
       <listeners />
+      <method />
+    </configuration>
+    <configuration default="true" type="uTestRunConfiguration" factoryName="utest">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <extension name="scalaCoverage" />
+      <module name="" />
+      <setting name="path" value="" />
+      <setting name="package" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workingDirectory" value="$PROJECT_DIR$" />
+      <setting name="searchForTest" value="Across module dependencies" />
+      <setting name="testName" value="" />
+      <setting name="testKind" value="Class" />
+      <setting name="showProgressMessages" value="true" />
+      <envs />
       <method />
     </configuration>
     <list size="5">
@@ -1552,14 +1600,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFile.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="52" column="25" selection-start-line="52" selection-start-column="25" selection-end-line="52" selection-end-column="25" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpCommunicationComponent.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1623,10 +1663,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFile.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-6.172414">
+          <caret line="108" column="16" selection-start-line="108" selection-start-column="11" selection-end-line="108" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="193" column="21" selection-start-line="193" selection-start-column="21" selection-end-line="193" selection-end-column="21" />
+          <caret line="175" column="67" selection-start-line="175" selection-start-column="67" selection-end-line="175" selection-end-column="67" />
           <folding />
         </state>
       </provider>
@@ -1641,8 +1689,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/org/iyakupov/downloader/core/ManualDownloaderTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.24028268">
-          <caret line="23" column="123" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="123" />
+        <state vertical-scroll-proportion="0.4204947">
+          <caret line="23" column="76" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="123" />
           <folding />
         </state>
       </provider>

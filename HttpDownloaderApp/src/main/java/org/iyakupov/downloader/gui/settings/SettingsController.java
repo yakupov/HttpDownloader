@@ -1,6 +1,8 @@
 package org.iyakupov.downloader.gui.settings;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
@@ -47,7 +49,7 @@ public class SettingsController implements Initializable {
 
     }
 
-    public void saveButtonPressed() {
+    public void saveButtonPressed(ActionEvent actionEvent) {
         if (settingsModel == null) {
             logger.error("Data model is not defined fot settings controller, but save button was pressed");
             final Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -55,13 +57,13 @@ public class SettingsController implements Initializable {
             alert.setHeaderText("Data model is not defined fot settings controller");
             alert.show();
         } else {
-            if (fileThreadsTextField.getText() != null)
+            if (fileThreadsTextField.getText() != null && fileThreadsTextField.getText().length() > 0)
                 settingsModel.setDefaultNumberOfThreadsPerFile(Integer.parseInt(fileThreadsTextField.getText()));
 
-            if (totalThreadsTextField.getText() != null)
+            if (totalThreadsTextField.getText() != null && totalThreadsTextField.getText().length() > 0)
                 settingsModel.setTotalNumberOfThreads(Integer.parseInt(totalThreadsTextField.getText()));
 
-            if (outDirTextField.getText() != null) {
+            if (outDirTextField.getText() != null && outDirTextField.getText().length() > 0) {
                 try {
                     final File outputDir = new File(outDirTextField.getText());
                     if (!outputDir.exists()) {
@@ -83,6 +85,10 @@ public class SettingsController implements Initializable {
                 }
             }
         }
+
+        final Node source = (Node) actionEvent.getSource();
+        final Stage stage = (Stage) source.getScene().getWindow();
+        stage.close();
     }
 
     @Override

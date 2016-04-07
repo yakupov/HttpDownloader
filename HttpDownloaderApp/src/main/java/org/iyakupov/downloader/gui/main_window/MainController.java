@@ -2,6 +2,7 @@ package org.iyakupov.downloader.gui.main_window;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
@@ -12,6 +13,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.iyakupov.downloader.core.DownloadStatus;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.dispatch.impl.DispatchingQueue;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
@@ -116,5 +118,30 @@ public class MainController implements Initializable, Closeable {
         dispatcher.close();
         if (tableRefreshTimeline != null)
             tableRefreshTimeline.stop();
+    }
+
+    public void pauseTask(ActionEvent actionEvent) {
+        logger.info("Cancel pressed");
+        final IDownloadableFile selectedFile = allTasksTableView.getSelectionModel().getSelectedItem();
+        if (selectedFile != null) {
+            selectedFile.pause();
+            logger.info("Cancel processed");
+        }
+    }
+
+    public void resumeTask(ActionEvent actionEvent) {
+        final IDownloadableFile selectedFile = allTasksTableView.getSelectionModel().getSelectedItem();
+        if (selectedFile != null) {
+            if (selectedFile.getStatus() == DownloadStatus.PAUSED)
+                dispatcher.resumeDownload(selectedFile);
+        }
+    }
+
+    public void cancelTask(ActionEvent actionEvent) {
+        final IDownloadableFile selectedFile = allTasksTableView.getSelectionModel().getSelectedItem();
+        if (selectedFile != null) {
+            selectedFile.cancel();
+            dispatcher.forgetFile(selectedFile);
+        }
     }
 }

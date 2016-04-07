@@ -10,8 +10,8 @@
 <?import javafx.scene.control.cell.*?>
 <?import javafx.collections.*?>
 <?import org.iyakupov.downloader.gui.*?>
-
 <?import javafx.scene.input.KeyCombination?>
+
 <BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.iyakupov.downloader.gui.main_window.MainController">
     <top>
@@ -20,10 +20,10 @@
                 <Menu mnemonicParsing="false" text="File">
                     <items>
                         <MenuItem mnemonicParsing="false" text="Close"/>
-                        <MenuItem mnemonicParsing="false" onAction="#openFileSubmitDialog" text="New download"
-                                  fx:id="newDownloadMenuItem"/>
-                        <MenuItem mnemonicParsing="false" onAction="#openSettings" text="Settings"
-                                  fx:id="settingsMenuItem">
+                        <MenuItem fx:id="newDownloadMenuItem" mnemonicParsing="false" onAction="#openFileSubmitDialog"
+                                  text="New download"/>
+                        <MenuItem fx:id="settingsMenuItem" mnemonicParsing="false" onAction="#openSettings"
+                                  text="Settings">
                             <!--accelerator>
                                 <KeyCombination >
                             </accelerator-->
@@ -71,7 +71,21 @@
                         <PropertyValueFactory property="downloadSpeed"/>
                     </cellValueFactory>
                 </TableColumn>
+                <TableColumn minWidth="75.0" prefWidth="-1.0" text="Active threads">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="activeThreadCount"/>
+                    </cellValueFactory>
+                </TableColumn>
             </columns>
+            <contextMenu>
+                <ContextMenu>
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="Pause" onAction="#pauseTask"/>
+                        <MenuItem mnemonicParsing="false" text="Resume" onAction="#resumeTask"/>
+                        <MenuItem mnemonicParsing="false" text="Cancel &amp; delete" onAction="#cancelTask"/>
+                    </items>
+                </ContextMenu>
+            </contextMenu>
         </TableView>
     </center>
 </BorderPane>
