@@ -102,8 +102,10 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
 
     @Override
     public void completeSuccessfully() {
-        if (status != CANCELLED && status != ERROR)
+        if (status != CANCELLED && status != ERROR) {
             status = DONE;
+            length = downloadedBytesCount;
+        }
     }
 
     @Override

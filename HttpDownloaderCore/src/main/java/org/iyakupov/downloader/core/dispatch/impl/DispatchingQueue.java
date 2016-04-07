@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -185,5 +186,11 @@ public class DispatchingQueue implements IDispatchingQueue {
             logger.error("Failed to resume - unexpected file status: " + file.getStatus());
             return false;
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        knownFiles.forEach(IDownloadableFile::cancel);
+        executor.shutdownNow();
     }
 }

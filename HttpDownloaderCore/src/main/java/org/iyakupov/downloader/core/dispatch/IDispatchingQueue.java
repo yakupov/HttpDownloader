@@ -4,13 +4,14 @@ import org.iyakupov.downloader.core.file.IDownloadableFile;
 import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
 import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
 
+import java.io.Closeable;
 import java.io.File;
 import java.util.Collection;
 
 /**
  * Dispatcher that tracks, manages and executes file download requests and part download requests
  */
-public interface IDispatchingQueue {
+public interface IDispatchingQueue extends Closeable {
     /**
      * Get the parent file for this downloadable part
      *

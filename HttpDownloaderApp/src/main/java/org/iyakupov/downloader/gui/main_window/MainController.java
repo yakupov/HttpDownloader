@@ -1,5 +1,7 @@
 package org.iyakupov.downloader.gui.main_window;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -11,6 +13,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableView;
 import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.dispatch.impl.DispatchingQueue;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
@@ -23,18 +26,22 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
  * Controller of the main window (with downloadable file list etc)
  */
-public class MainController implements Initializable {
+public class MainController implements Initializable, Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final SettingsModel settingsModel = new SettingsModel();
     private final IDispatchingQueue dispatcher = new DispatchingQueue(SettingsModel.DEFAULT_WORKER_THREADS_COUNT_PER_FILE);
     private final ObservableList<IDownloadableFile> downloadableFilesList = FXCollections.observableArrayList();
+    //private final Timer tableRefreshTimer = new Timer();
+    private Timeline tableRefreshTimeline;
 
     //FXML items
     public TableView<IDownloadableFile> allTasksTableView;
@@ -91,6 +98,22 @@ public class MainController implements Initializable {
         });
 
         allTasksTableView.setItems(downloadableFilesList);
+
+        tableRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            allTasksTableView.setItems(FXCollections.observableArrayList(dispatcher.getAllFiles())); //FIXME
+        }));
+        tableRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
+        tableRefreshTimeline.play();
+
+        /*
+        tableRefreshTimer.schedule(
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        //allTasksTableView.setItems(downloadableFilesList); //FIXME
+                        allTasksTableView.setItems(FXCollections.observableArrayList(dispatcher.getAllFiles())); //FIXME
+                    }
+                }, 0, 1000);*/
     }
 
     @NotNull
@@ -105,10 +128,29 @@ public class MainController implements Initializable {
 
         downloadableFilesList.add(downloadableFile);
 
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        logger.trace(downloadableFile.getProgress() + "_" + downloadableFile.getStatus());
+        logger.trace(downloadableFile.getDownloadableParts().size() + "");
+        logger.trace(downloadableFile.getDownloadableParts().get(0).getProgress() + "");
+
+
+
+
+        //allTasksTableView.setItems(downloadableFilesList);
+
         //TODO
     }
 
 
-
-
+    @Override
+    public void close() throws IOException {
+        dispatcher.close();
+        //tableRefreshTimer.cancel();
+        tableRefreshTimeline.stop();
+    }
 }
