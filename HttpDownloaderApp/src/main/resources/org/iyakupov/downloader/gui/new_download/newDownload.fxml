@@ -11,6 +11,8 @@
     <children>
         <Label text="Enter the URL here:" />
         <TextField fx:id="urlTextField"/>
+        <Label text="Enter the number of worker threads here:" />
+        <TextField fx:id="nThreadsTextField" />
         <Label text="Enter the output directory here:" />
         <TextField fx:id="outDirTextField" />
         <Button minWidth="150.0" mnemonicParsing="false" text="Choose output directory" onAction="#directoryChooseButtonPressed" />

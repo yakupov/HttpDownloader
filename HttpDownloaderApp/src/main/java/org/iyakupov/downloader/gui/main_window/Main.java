@@ -1,6 +1,7 @@
 package org.iyakupov.downloader.gui.main_window;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -11,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.dispatch.impl.DispatchingQueue;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
@@ -22,6 +24,7 @@ public class Main extends Application {
         primaryStage.setTitle("Downloader");
         final Scene scene0 = new Scene(root); //TODO: default size needed?
         primaryStage.setScene(scene0);
+        primaryStage.setOnCloseRequest(event -> Platform.exit());
         primaryStage.show();
 
         //Test stage/scene switch
@@ -60,6 +63,8 @@ public class Main extends Application {
     public static void main(String[] args) {
         IDispatchingQueue q = new DispatchingQueue(10);
         ObservableList<IDownloadableFile> l = FXCollections.observableArrayList(q.getAllFiles());
+//TODO: cleanup
+
 
         launch(args);
     }

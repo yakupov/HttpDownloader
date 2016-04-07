@@ -12,14 +12,18 @@
 <?import org.iyakupov.downloader.gui.*?>
 
 <?import javafx.scene.input.KeyCombination?>
-<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.iyakupov.downloader.gui.main_window.MainController">
+<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.iyakupov.downloader.gui.main_window.MainController">
     <top>
         <MenuBar layoutY="2.0">
             <menus>
                 <Menu mnemonicParsing="false" text="File">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Close" />
-                        <MenuItem mnemonicParsing="false" onAction="#openFileSubmitDialog" text="New download" fx:id="newDownloadMenuItem">
+                        <MenuItem mnemonicParsing="false" text="Close"/>
+                        <MenuItem mnemonicParsing="false" onAction="#openFileSubmitDialog" text="New download"
+                                  fx:id="newDownloadMenuItem"/>
+                        <MenuItem mnemonicParsing="false" onAction="#openSettings" text="Settings"
+                                  fx:id="settingsMenuItem">
                             <!--accelerator>
                                 <KeyCombination >
                             </accelerator-->
@@ -28,12 +32,12 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Delete" />
+                        <MenuItem mnemonicParsing="false" text="Delete"/>
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="About" />
+                        <MenuItem mnemonicParsing="false" text="About"/>
                     </items>
                 </Menu>
             </menus>
@@ -44,31 +48,30 @@
             <columns>
                 <TableColumn minWidth="200" prefWidth="-1.0" text="URL">
                     <cellValueFactory>
-                        <PropertyValueFactory property="c1" />
+                        <PropertyValueFactory property="locator"/>
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn minWidth="75.0" prefWidth="-1.0" text="Status">
                     <cellValueFactory>
-                        <PropertyValueFactory property="testEnum" />
+                        <PropertyValueFactory property="status"/>
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn minWidth="700" prefWidth="-1.0" text="Output file">
                     <cellValueFactory>
-                        <PropertyValueFactory property="c2" />
+                        <PropertyValueFactory property="outputFile"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn minWidth="75.0" prefWidth="-1.0" text="Completion %" />
+                <TableColumn minWidth="75.0" prefWidth="-1.0" text="Completion %">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="progress"/>
+                    </cellValueFactory>
+                </TableColumn>
                 <TableColumn minWidth="75.0" prefWidth="-1.0" text="Speed">
                     <cellValueFactory>
-                        <PropertyValueFactory property="c3" />
+                        <PropertyValueFactory property="downloadSpeed"/>
                     </cellValueFactory>
                 </TableColumn>
             </columns>
-            <!--items>
-                <FXCollections fx:factory="observableArrayList">
-                    <TestModel c1="111" c2="222" c3="333" />
-                </FXCollections>
-            </items-->
         </TableView>
     </center>
 </BorderPane>

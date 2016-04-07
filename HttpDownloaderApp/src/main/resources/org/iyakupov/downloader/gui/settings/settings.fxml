@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="200.0" minWidth="300.0" spacing="10.0"
+      xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.iyakupov.downloader.gui.settings.SettingsController">
+    <children>
+        <Label text="Default output folder"/>
+        <TextField fx:id="outDirTextField"/>
+        <Button mnemonicParsing="false" text="Choose default output folder"
+                onAction="#chooseDefaultOutputFolderPressed"/>
+        <Separator/>
+        <Label text="Total number of worker threads"/>
+        <TextField fx:id="totalThreadsTextField"/>
+        <Label text="Default number of worker threads per file"/>
+        <TextField fx:id="fileThreadsTextField"/>
+        <Separator/>
+        <Button mnemonicParsing="false" text="Save settings" onAction="#saveButtonPressed"/>
+    </children>
+</VBox>
