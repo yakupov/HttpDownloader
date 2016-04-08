@@ -116,10 +116,13 @@ public class DispatcherTest {
 
     @Before
     public void ensureCleanTempDir() {
-        if (!outputDir.exists())
-            return;
-
         logger.debug("Temporary file output dir: " + outputDir.getAbsolutePath());
+        if (!outputDir.exists()) {
+            if (!outputDir.mkdir())
+                logger.error("Failed to create the output directory");
+            return;
+        }
+
         logger.debug("Deleting old tmpdir");
         boolean deleted = false;
         final long startTime = System.nanoTime();

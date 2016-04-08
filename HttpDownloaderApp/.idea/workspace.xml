@@ -4,7 +4,7 @@
     <list default="true" id="b1568d7b-3142-4ea0-935b-46165db51fae" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/test/java/org/iyakupov/downloader/core/DispatcherTest.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/test/java/org/iyakupov/downloader/core/DispatcherTest.java" />
     </list>
     <ignored path="HttpDownloaderApp.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -980,7 +980,7 @@
       <created>1460054222789</created>
       <option name="number" value="Default" />
       <updated>1460054222789</updated>
-      <workItem from="1460125833445" duration="3481000" />
+      <workItem from="1460125833445" duration="3857000" />
     </task>
     <task id="LOCAL-00001" summary="Work in progress. Settings window and new download request window seem to be ok.">
       <created>1460061142747</created>
@@ -1028,7 +1028,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3481000" />
+    <option name="totallyTimeSpent" value="3857000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
