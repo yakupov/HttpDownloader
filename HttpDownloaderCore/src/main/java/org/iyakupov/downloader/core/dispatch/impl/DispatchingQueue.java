@@ -138,6 +138,11 @@ public class DispatchingQueue implements IDispatchingQueue {
         final DownloadableFile downloadableFile = new DownloadableFile(url, outputDir, nThreads);
         if (knownFiles.contains(downloadableFile))
             throw new RuntimeException("Download request with this URL is already submitted: " + url);
+        knownFiles.forEach(f -> {
+            if (f.getOutputFile().equals(downloadableFile.getOutputFile()))
+                throw new RuntimeException("Download request with this output file name already exists: " +
+                        downloadableFile.getOutputFile());
+        });
         submitDownloadRequest(downloadableFile);
         return downloadableFile;
     }
