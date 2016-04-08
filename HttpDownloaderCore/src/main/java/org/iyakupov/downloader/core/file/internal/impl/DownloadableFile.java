@@ -62,9 +62,7 @@ public class DownloadableFile implements IDownloadableFileInt {
                 final DownloadStatus status = part.getStatus();
                 if (status != DONE) {
                     isDone = false;
-                    if (status == CANCEL_CONFIRMED) {
-                        return CANCELLED;
-                    } else if (status == ERROR || status == CANCELLED) {
+                    if (status == ERROR || status == CANCELLED) {
                         return status;
                     } else if (status == DOWNLOADING) {
                         isDownloading = true;

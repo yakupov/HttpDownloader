@@ -95,6 +95,12 @@ public class MainController implements Initializable, Closeable {
 
         //React on change of the thread pool size
         settingsModel.getTotalNumberOfThreadsProperty().addListener((observable, oldValue, newValue) -> {
+            logger.debug("Thread pool resize. Current file states:");
+            dispatcher.getAllFiles().forEach(f -> {
+                logger.debug("- " + f.getStatus() + " " + f.getOutputFile());
+                f.getDownloadableParts().forEach(p -> logger.debug("-- " + p.getStatus()));
+            });
+
             if (oldValue.intValue() != newValue.intValue())
                 dispatcher.setThreadPoolSize(newValue.intValue(), false);
         });
@@ -168,7 +174,7 @@ public class MainController implements Initializable, Closeable {
             final Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Runtime error");
             alert.setHeaderText("Failed to submit the new file download request");
-            alert.setContentText(e.getMessage() + "\nPlease see error details in application logs.");
+            alert.setContentText(e.getMessage());
             alert.show();
         }
     }
@@ -182,14 +188,29 @@ public class MainController implements Initializable, Closeable {
 
     public void pauseTasks() {
         final List<IDownloadableFile> selectedFiles = allTasksTableView.getSelectionModel().getSelectedItems();
+
+        logger.debug("Pause. Current file states:");
+        selectedFiles.forEach(f -> {
+            logger.debug("- " + f.getStatus() + " " + f.getOutputFile());
+            f.getDownloadableParts().forEach(p -> logger.debug("-- " + p.getStatus()));
+        });
+
         selectedFiles.forEach(IDownloadableFile::pause);
     }
 
     public void resumeTasks() {
         final List<IDownloadableFile> selectedFiles = allTasksTableView.getSelectionModel().getSelectedItems();
+
+        logger.debug("Resume. Current file states:");
+        selectedFiles.forEach(f -> {
+            logger.debug("- " + f.getStatus() + " " + f.getOutputFile());
+            f.getDownloadableParts().forEach(p -> logger.debug("-- " + p.getStatus()));
+        });
+
         selectedFiles.stream()
                 .filter(f -> f.getStatus() == DownloadStatus.PAUSED || f.getStatus() == DownloadStatus.ERROR)
                 .forEach(dispatcher::resumeDownload);
+        selectedFiles.stream().forEach(f -> System.out.println(f.toString()));
     }
 
     public void cancelTasks() {

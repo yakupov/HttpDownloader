@@ -12,7 +12,6 @@ public enum DownloadStatus {
     PAUSE_CONFIRMED,
     ERROR,
     CANCELLED,
-    CANCEL_CONFIRMED,
     UNSAVED,
     DONE
 }

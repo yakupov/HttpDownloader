@@ -77,9 +77,4 @@ public interface IDownloadableFilePartInt extends IDownloadableFilePart {
      * Set the status of PAUSE_CONFIRMED instead of PAUSED
      */
     void confirmPause();
-
-    /**
-     * Set the status of CANCEL_CONFIRMED instead of CANCELLED
-     */
-    void confirmCancel();
 }

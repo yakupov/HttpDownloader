@@ -204,7 +204,7 @@ public class FilePartDownloadTest {
         testCommon(100,
                 new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
                 new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING, IDownloadableFile::pause),
-                new ExpectedState(PARTIAL_CONTENT_OK, PAUSED, PAUSED)
+                new ExpectedState(PARTIAL_CONTENT_OK, PAUSE_CONFIRMED, PAUSED)
         );
     }
 
@@ -213,7 +213,7 @@ public class FilePartDownloadTest {
         testCommon(100,
                 new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
                 new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING, IDownloadableFile::pause),
-                new ExpectedState(PARTIAL_CONTENT_OK, PAUSED, PAUSED, IDownloadableFile::cancel),
+                new ExpectedState(PARTIAL_CONTENT_OK, PAUSE_CONFIRMED, PAUSED, IDownloadableFile::cancel),
                 new ExpectedState(PARTIAL_CONTENT_OK, CANCELLED, CANCELLED)
         );
     }
@@ -234,7 +234,7 @@ public class FilePartDownloadTest {
         testCommon(100,
                 new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
                 new ExpectedState(OK, ERROR, ERROR, IDownloadableFile::pause),
-                new ExpectedState(PARTIAL_CONTENT_OK, PAUSED, ERROR)
+                new ExpectedState(PARTIAL_CONTENT_OK, PAUSE_CONFIRMED, ERROR)
         );
     }
 

@@ -93,11 +93,10 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
 
                         //Check status
                         if (filePart.getStatus() == CANCELLED) {
-                            filePart.confirmCancel();
                             logger.debug("Task " + filePart.getOutputFile() + " cancelled, exiting worker");
                             return;
                         } else if (filePart.getRemainingLength() > 0) {
-                            if (filePart.getStatus() == PAUSED) {
+                            if (filePart.getStatus() == PAUSED || filePart.getStatus() == PAUSE_CONFIRMED) {
                                 filePart.confirmPause();
                                 logger.debug("Task " + filePart.getOutputFile() + " paused, exiting worker");
                                 return;
