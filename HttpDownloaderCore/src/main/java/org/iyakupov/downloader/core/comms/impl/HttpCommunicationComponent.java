@@ -71,10 +71,10 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
             httpRequest.addHeader(new BasicHeader("Range", "bytes=0-"));
             httpRequest.setConfig(httpRequestConfig);
 
-            logger.trace("Executing request " + httpRequest.getURI());
+            logger.debug("Executing request " + httpRequest.getURI());
             final HttpResponse response = httpClient.execute(httpRequest);
             final int statusCode = response.getStatusLine().getStatusCode();
-            logger.trace("HTTP response code: " + statusCode + ", reason = " +
+            logger.debug("HTTP response code: " + statusCode + ", reason = " +
                     response.getStatusLine().getReasonPhrase());
             resultBuilder.setMessage(response.getStatusLine().getReasonPhrase());
 
@@ -83,7 +83,7 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
                 final long contentLength;
                 if (contentLengthHeader != null && contentLengthHeader.getValue() != null &&
                         contentLengthHeader.getValue().matches("[0-9]+")) {
-                    logger.trace("Content length: " + contentLengthHeader.getValue());
+                    logger.debug("Content length: " + contentLengthHeader.getValue());
                     contentLength = Long.parseLong(contentLengthHeader.getValue());
                 } else {
                     logger.warn("Received a HTTP HEAD response without valid content-length. " +
@@ -146,10 +146,10 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
             httpRequest.addHeader(new BasicHeader("Range", "bytes=" + start + "-" + end));
             httpRequest.setConfig(httpRequestConfig);
 
-            logger.trace("Executing request " + httpRequest.getURI());
+            logger.debug("Executing request " + httpRequest.getURI());
             final HttpResponse response = httpClient.execute(httpRequest);
             final int statusCode = response.getStatusLine().getStatusCode();
-            logger.trace("HTTP response code: " + statusCode + ", reason = " +
+            logger.debug("HTTP response code: " + statusCode + ", reason = " +
                     response.getStatusLine().getReasonPhrase());
             resultBuilder.setMessage(response.getStatusLine().getReasonPhrase());
 

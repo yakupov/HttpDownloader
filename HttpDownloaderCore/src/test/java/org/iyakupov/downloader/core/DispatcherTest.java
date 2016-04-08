@@ -9,6 +9,7 @@ import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.dispatch.impl.DispatchingQueue;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
 import org.jetbrains.annotations.NotNull;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -94,7 +95,7 @@ public class DispatcherTest {
             final Object[] invocationArguments = invocationOnMock.getArguments();
             assert (invocationArguments.length == 3);
             final int dataLength = ((Long) invocationArguments[2]).intValue();
-            logger.trace("Creating new SleepyStream, dataLength = " + dataLength);
+            logger.debug("Creating new SleepyStream, dataLength = " + dataLength);
             final byte[] res = new byte[dataLength >= 0 ? dataLength : chunkSize];
             Arrays.fill(res, ((Long) invocationArguments[1]).byteValue());
             return new HttpCommunicationResult(partDownloadRc, "Irrelevant",
@@ -111,11 +112,15 @@ public class DispatcherTest {
 
     @NotNull
     final File outputDir = new File("target/ut_temp_dir/");
+    IDispatchingQueue dispatcher;
 
     @Before
     public void ensureCleanTempDir() {
-        logger.trace("Temporary file output dir: " + outputDir.getAbsolutePath());
-        logger.trace("Deleting old tmpdir");
+        if (!outputDir.exists())
+            return;
+
+        logger.debug("Temporary file output dir: " + outputDir.getAbsolutePath());
+        logger.debug("Deleting old tmpdir");
         boolean deleted = false;
         final long startTime = System.nanoTime();
         while (!deleted && (System.nanoTime() - startTime) < 10e9) {
@@ -128,7 +133,12 @@ public class DispatcherTest {
                 logger.info("Trying to delete again");
             }
         }
-        logger.trace("Re-creating tmpdir: " + outputDir.mkdir());
+        logger.debug("Re-creating tmpdir: " + outputDir.mkdir());
+    }
+
+    @After
+    public void cleanup() throws IOException {
+        dispatcher.close();
     }
 
     @Test(timeout = 10000)
@@ -138,7 +148,7 @@ public class DispatcherTest {
         final int downloadablePartsPerFile = 3;
         final int readDelay = 1000;
 
-        final IDispatchingQueue dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
+        dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
                 PARTIAL_CONTENT_OK, PARTIAL_CONTENT_OK, readDelay, numberOfThreads);
         assert (dispatcher.getAllFiles().isEmpty());
 
@@ -166,7 +176,7 @@ public class DispatcherTest {
         final int downloadablePartsPerFile = 3;
         final int readDelay = 1000;
 
-        final IDispatchingQueue dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
+        dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
                 PARTIAL_CONTENT_OK, PARTIAL_CONTENT_OK, readDelay, numberOfThreads);
         assert (dispatcher.getAllFiles().isEmpty());
 
@@ -201,7 +211,7 @@ public class DispatcherTest {
         final int downloadablePartsPerFile = 3;
         final int readDelay = 1000;
 
-        final IDispatchingQueue dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
+        dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
                 PARTIAL_CONTENT_OK, PARTIAL_CONTENT_OK, readDelay, numberOfThreads);
         assert (dispatcher.getAllFiles().isEmpty());
 
@@ -233,7 +243,7 @@ public class DispatcherTest {
         final int downloadablePartsPerFile = 3;
         final int readDelay = 1000;
 
-        final IDispatchingQueue dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
+        dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
                 PARTIAL_CONTENT_OK, PARTIAL_CONTENT_OK, readDelay, numberOfThreads);
         assert (dispatcher.getAllFiles().isEmpty());
 
@@ -268,7 +278,7 @@ public class DispatcherTest {
         assertEquals(chunkSize * downloadablePartsPerFile, file2.getOutputFile().length());
     }
 
-    @Test(timeout = 20000)
+    @Test(timeout = 30000)
     public void testOneFileWithEviction() throws IOException {
         final int numberOfThreads = 20;
         final int newNumberOfThreads = 1;
@@ -277,7 +287,7 @@ public class DispatcherTest {
         final int readDelay = 1000;
         final int allowedDelaysForASingleIteration = 1000;
 
-        final IDispatchingQueue dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
+        dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
                 PARTIAL_CONTENT_OK, PARTIAL_CONTENT_OK, readDelay, numberOfThreads);
         assert (dispatcher.getAllFiles().isEmpty());
 
@@ -312,7 +322,7 @@ public class DispatcherTest {
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
     }
 
-    @Test(timeout = 30000)
+    @Test(timeout = 40000)
     public void testAdditionAfterEviction() throws IOException {
         final int numberOfThreads = 20;
         final int newNumberOfThreads = 1;
@@ -320,7 +330,7 @@ public class DispatcherTest {
         final int chunkSize = 3 * HttpPartDownloadCommunicationAlgorithm.BUFFER_SIZE; //5 reads
         final int readDelay = 1000;
 
-        final IDispatchingQueue dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
+        dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
                 PARTIAL_CONTENT_OK, PARTIAL_CONTENT_OK, readDelay, numberOfThreads);
         assert (dispatcher.getAllFiles().isEmpty());
 
@@ -363,7 +373,7 @@ public class DispatcherTest {
         assertEquals(chunkSize * downloadablePartsPerFile, file2.getOutputFile().length());
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 15000)
     public void testOneFileWithExtension() throws IOException {
         final int numberOfThreads = 1;
         final int newNumberOfThreads = 20;
@@ -371,7 +381,7 @@ public class DispatcherTest {
         final int chunkSize = 5 * HttpPartDownloadCommunicationAlgorithm.BUFFER_SIZE; //5 reads
         final int readDelay = 1000;
 
-        final IDispatchingQueue dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
+        dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
                 PARTIAL_CONTENT_OK, PARTIAL_CONTENT_OK, readDelay, numberOfThreads);
         assert (dispatcher.getAllFiles().isEmpty());
 
@@ -409,7 +419,7 @@ public class DispatcherTest {
         final int downloadablePartsPerFile = 3;
         final int readDelay = 1000;
 
-        final IDispatchingQueue dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
+        dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
                 PARTIAL_CONTENT_OK, PARTIAL_CONTENT_OK, readDelay, numberOfThreads);
         assert (dispatcher.getAllFiles().isEmpty());
 
@@ -437,7 +447,7 @@ public class DispatcherTest {
         final int downloadablePartsPerFile = 3;
         final int readDelay = 1000;
 
-        final IDispatchingQueue dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
+        dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
                 PARTIAL_CONTENT_OK, PARTIAL_CONTENT_OK, readDelay, numberOfThreads);
         assert (dispatcher.getAllFiles().isEmpty());
 
@@ -473,7 +483,7 @@ public class DispatcherTest {
         final int downloadablePartsPerFile = 3;
         final int readDelay = 1000;
 
-        final IDispatchingQueue dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
+        dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
                 PARTIAL_CONTENT_OK, PARTIAL_CONTENT_OK, readDelay, numberOfThreads);
         assert (dispatcher.getAllFiles().isEmpty());
 

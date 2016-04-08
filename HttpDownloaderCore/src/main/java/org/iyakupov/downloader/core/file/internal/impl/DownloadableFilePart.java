@@ -60,7 +60,7 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
 
     @Override
     public void pause() {
-        if (status != CANCELLED && status != ERROR && status != DONE) {
+        if (status != CANCELLED && status != ERROR && status != DONE && status != PAUSE_CONFIRMED) {
             status = PAUSED;
         }
     }
@@ -86,6 +86,12 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
     }
 
     @Override
+    public void confirmCancel() {
+        if (status == CANCELLED)
+            status = CANCEL_CONFIRMED;
+    }
+
+    @Override
     public void start() {
         if (status != CANCELLED && status != ERROR && status != DONE) {
             if (!partialDownloadSupported) {
@@ -97,6 +103,7 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
 
     @Override
     public void cancel() {
+        if (status != CANCEL_CONFIRMED)
         status = CANCELLED;
     }
 

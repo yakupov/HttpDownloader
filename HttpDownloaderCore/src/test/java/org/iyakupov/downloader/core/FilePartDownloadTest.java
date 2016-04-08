@@ -81,9 +81,9 @@ public class FilePartDownloadTest {
         final String fileUrl = "http://my.site/" + fileName;
 
         final File outputDir = new File("target/ut_temp_dir/");
-        logger.trace("Temporary file output dir: " + outputDir.getAbsolutePath());
-        logger.trace("Deleting old tmpdir: " + outputDir.delete());
-        logger.trace("Re-creating tmpdir: " + outputDir.mkdir());
+        logger.debug("Temporary file output dir: " + outputDir.getAbsolutePath());
+        logger.debug("Deleting old tmpdir: " + outputDir.delete());
+        logger.debug("Re-creating tmpdir: " + outputDir.mkdir());
 
         final int desiredPartsCount = expectedStates.length;
         final int chunkSize = fileSize / desiredPartsCount;

@@ -48,13 +48,13 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
             if (filePart.getStatus() != SUSPENDED && filePart.getStatus() != PENDING) {
                 return;
             }
-            logger.trace("Started task, file = " + filePart.getOutputFile());
+            logger.debug("Started task, file = " + filePart.getOutputFile());
             filePart.start();
 
             final ICommunicationResult communicationResult = comm.downloadRemoteFile(filePart.getLocator(),
                     filePart.getCurrentStartPosition(), filePart.getRemainingLength());
             if (filePart.getRemainingLength() < 0) {
-                logger.trace("Updating total length of chunk " + filePart.getOutputFile() +
+                logger.debug("Updating total length of chunk " + filePart.getOutputFile() +
                         ". Now it's " + communicationResult.getSize());
                 filePart.updateTotalLength(communicationResult.getSize());
             }
@@ -92,11 +92,13 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
 
                         //Check status
                         if (filePart.getStatus() == CANCELLED) {
+                            filePart.confirmCancel();
+                            logger.debug("Task " + filePart.getOutputFile() + " cancelled, exiting worker");
                             return;
                         } else if (filePart.getRemainingLength() > 0) {
                             if (filePart.getStatus() == PAUSED) {
                                 filePart.confirmPause();
-                                logger.trace("Task " + filePart.getOutputFile() + " paused, exiting worker");
+                                logger.debug("Task " + filePart.getOutputFile() + " paused, exiting worker");
                                 return;
                             } else if (filePart.getStatus() == SUSPENDED) {
                                 logger.info("Task " + filePart.getOutputFile() + " evicted, re-submitting");
@@ -133,7 +135,7 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
             filePart.setDownloadSpeed(0);
         }
 
-        logger.trace("Finished downloading part " + filePart.getOutputFile());
+        logger.debug("Finished downloading part " + filePart.getOutputFile());
 
         try {
             if (filePart.getRemainingLength() <= 0) {
@@ -166,7 +168,7 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
 
         try (OutputStream outputFileStream = new FileOutputStream(file.getOutputFile())) {
             for (IDownloadableFilePart part : file.getDownloadableParts()) {
-                logger.trace("Copy data from " + part.getOutputFile() + " to " + file.getOutputFile());
+                logger.debug("Copy data from " + part.getOutputFile() + " to " + file.getOutputFile());
 
                 //TODO: Create a new file if exists, maybe
                 Files.copy(part.getOutputFile().toPath(), outputFileStream);

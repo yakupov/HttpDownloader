@@ -35,6 +35,7 @@ public class DispatchingQueue implements IDispatchingQueue {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final ExecutorService trashRemovalExecutor = Executors.newCachedThreadPool();
     private final ThreadPoolExecutor executor;
     private final ICommunicationComponent communicationComponent;
     private final Lock taskAddLock = new ReentrantLock();
@@ -161,12 +162,10 @@ public class DispatchingQueue implements IDispatchingQueue {
         if (removed) {
             file.getDownloadableParts().stream().forEach(partDownloadTasks::remove);
             if (shouldCancel) {
-                file.getDownloadableParts().stream().map(IDownloadableFilePart::getOutputFile).forEach(f -> {
-                    if (!f.delete())
-                        f.deleteOnExit();
-                });
-                if (!file.getOutputFile().delete())
-                    file.getOutputFile().deleteOnExit();
+                file.getDownloadableParts().stream().map(IDownloadableFilePart::getOutputFile)
+                        .forEach(f -> trashRemovalExecutor.submit(new FileRemovalTask(f)));
+
+                trashRemovalExecutor.submit(new FileRemovalTask(file.getOutputFile()));
             }
         }
         return removed;
@@ -184,7 +183,7 @@ public class DispatchingQueue implements IDispatchingQueue {
                     .forEach(p -> {
                         final IDownloadableFilePartInt partInt = (IDownloadableFilePartInt) p;
                         partInt.resumeDownload();
-                        logger.trace("Resuming part " + p.getOutputFile());
+                        logger.debug("Resuming part " + p.getOutputFile());
                         executor.execute(new HttpPartDownloadCommunicationAlgorithm(
                                 TaskPriority.PAUSED_TASK.getPriority(), this, communicationComponent, partInt));
                     });
@@ -199,5 +198,21 @@ public class DispatchingQueue implements IDispatchingQueue {
     public void close() throws IOException {
         knownFiles.forEach(IDownloadableFile::cancel);
         executor.shutdownNow();
+        trashRemovalExecutor.shutdownNow();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            return;
+        }
+
+        knownFiles.forEach(file -> {
+            file.getDownloadableParts().stream().map(IDownloadableFilePart::getOutputFile).forEach(f -> {
+                if (!f.delete())
+                    f.deleteOnExit();
+            });
+            if (!file.getOutputFile().delete())
+                file.getOutputFile().deleteOnExit();
+        });
     }
 }

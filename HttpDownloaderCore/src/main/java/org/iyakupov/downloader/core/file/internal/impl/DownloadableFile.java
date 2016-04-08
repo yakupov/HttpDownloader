@@ -59,11 +59,12 @@ public class DownloadableFile implements IDownloadableFileInt {
             boolean isPaused = false;
             boolean isDone = true;
             for (IDownloadableFilePart part: getDownloadableParts()) {
-                //logger.trace("Part " + part.getOutputFile() + " status " + part.getStatus());
                 final DownloadStatus status = part.getStatus();
                 if (status != DONE) {
                     isDone = false;
-                    if (status == ERROR || status == CANCELLED) {
+                    if (status == CANCEL_CONFIRMED) {
+                        return CANCELLED;
+                    } else if (status == ERROR || status == CANCELLED) {
                         return status;
                     } else if (status == DOWNLOADING) {
                         isDownloading = true;
