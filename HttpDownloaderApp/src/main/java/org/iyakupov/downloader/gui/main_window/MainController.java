@@ -95,7 +95,8 @@ public class MainController implements Initializable, Closeable {
 
         //React on change of the thread pool size
         settingsModel.getTotalNumberOfThreadsProperty().addListener((observable, oldValue, newValue) -> {
-            dispatcher.setThreadPoolSize(newValue.intValue(), false);
+            if (oldValue.intValue() != newValue.intValue())
+                dispatcher.setThreadPoolSize(newValue.intValue(), false);
         });
 
         allTasksTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -164,7 +165,6 @@ public class MainController implements Initializable, Closeable {
         try {
             dispatcher.submitFile(request.getUrl(), request.getOutputDir(), request.getNumberOfThreads());
         } catch (RuntimeException e) {
-            logger.error("Failed to submit the new file download request", e);
             final Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Runtime error");
             alert.setHeaderText("Failed to submit the new file download request");
@@ -187,7 +187,9 @@ public class MainController implements Initializable, Closeable {
 
     public void resumeTasks() {
         final List<IDownloadableFile> selectedFiles = allTasksTableView.getSelectionModel().getSelectedItems();
-        selectedFiles.stream().filter(f -> f.getStatus() == DownloadStatus.PAUSED).forEach(dispatcher::resumeDownload);
+        selectedFiles.stream()
+                .filter(f -> f.getStatus() == DownloadStatus.PAUSED || f.getStatus() == DownloadStatus.ERROR)
+                .forEach(dispatcher::resumeDownload);
     }
 
     public void cancelTasks() {

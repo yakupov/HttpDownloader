@@ -61,7 +61,10 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
     @Override
     public void pause() {
         if (status != CANCELLED && status != ERROR && status != DONE && status != PAUSE_CONFIRMED) {
-            status = PAUSED;
+            if (status == SUSPENDED)
+                status = PAUSE_CONFIRMED;
+            else
+                status = PAUSED;
         }
     }
 

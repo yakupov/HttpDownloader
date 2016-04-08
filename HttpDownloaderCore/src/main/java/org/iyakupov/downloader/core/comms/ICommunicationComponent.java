@@ -2,10 +2,12 @@ package org.iyakupov.downloader.core.comms;
 
 import org.iyakupov.downloader.core.exceptions.BadLocatorException;
 
+import java.io.Closeable;
+
 /**
  * Abstraction for performance of communications with external systems
  */
-public interface ICommunicationComponent {
+public interface ICommunicationComponent extends Closeable {
     /**
      * Try to connect to external resource but don't download the file.
      *

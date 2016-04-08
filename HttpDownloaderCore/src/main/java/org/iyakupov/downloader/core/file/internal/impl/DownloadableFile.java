@@ -174,4 +174,17 @@ public class DownloadableFile implements IDownloadableFileInt {
     public int hashCode() {
         return locator.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "DownloadableFile{" +
+                "locator='" + locator + '\'' +
+                ", outputFile=" + outputFile +
+                ", maxThreadCount=" + maxThreadCount +
+                ", fileSaved=" + fileSaved +
+                ", errorHappened=" + errorHappened +
+                ", partsCount=" + getDownloadableParts().size() +
+                ", status=" + getStatus() +
+                '}';
+    }
 }

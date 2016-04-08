@@ -29,10 +29,11 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
     public static final int DEFAULT_MAX_CONNECTIONS = 200;
     public static final int DEFAULT_CONN_RQ_TIMEOUT = 6000;
     public static final int DEFAULT_CONN_TIMEOUT = 6000;
-    public static final int DEFAULT_SOCKET_TIMEOUT = 10000;
+    public static final int DEFAULT_SOCKET_TIMEOUT = 30000;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final PoolingHttpClientConnectionManager connectionManager;
     private final HttpClient httpClient;
     private final RequestConfig httpRequestConfig;
 
@@ -41,7 +42,7 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
     }
 
     public HttpCommunicationComponent(int maxConnections, int rqTimeout, int connTimeout, int socketTimeout) {
-        final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(maxConnections);
         connectionManager.setDefaultMaxPerRoute(maxConnections);
 
@@ -184,5 +185,10 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
         }
 
         return resultBuilder.createHttpCommunicationResult();
+    }
+
+    @Override
+    public void close() throws IOException {
+        connectionManager.close();
     }
 }

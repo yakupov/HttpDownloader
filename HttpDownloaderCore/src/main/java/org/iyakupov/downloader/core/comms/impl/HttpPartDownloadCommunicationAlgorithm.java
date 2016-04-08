@@ -46,6 +46,7 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
     public void run() {
         try {
             if (filePart.getStatus() != SUSPENDED && filePart.getStatus() != PENDING) {
+                logger.debug("Failed to start task " + filePart.getOutputFile() + ". Incorrect status: " + filePart.getStatus());
                 return;
             }
             logger.debug("Started task, file = " + filePart.getOutputFile());

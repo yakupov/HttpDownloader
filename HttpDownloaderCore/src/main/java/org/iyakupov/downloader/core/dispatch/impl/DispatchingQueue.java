@@ -108,6 +108,8 @@ public class DispatchingQueue implements IDispatchingQueue {
         executor.setCorePoolSize(newSize);
         executor.setMaximumPoolSize(newSize);
 
+        logger.debug("Set new core and max pool size: " + newSize);
+
         int tasksToEvict = executor.getActiveCount() - newSize;
 
         for (IDownloadableFilePartInt part: partDownloadTasks.keySet()) {
@@ -182,6 +184,7 @@ public class DispatchingQueue implements IDispatchingQueue {
     public boolean resumeDownload(IDownloadableFile file) {
         if (file.getStatus() == DownloadStatus.PAUSED ||
                 file.getStatus() == DownloadStatus.ERROR && file.getDownloadableParts().size() > 0) {
+            logger.debug("Resuming download of file " + file.getOutputFile());
             if (!knownFiles.contains(file)) {
                 logger.error("Trying to resume download of a forgotten file. File is already deleted?");
                 return false;
@@ -197,7 +200,7 @@ public class DispatchingQueue implements IDispatchingQueue {
                     });
             return true;
         } else {
-            logger.error("Failed to resume - unexpected file status: " + file.getStatus());
+            logger.error("Failed to resume download of the file " + file);
             return false;
         }
     }
@@ -207,6 +210,7 @@ public class DispatchingQueue implements IDispatchingQueue {
         knownFiles.forEach(IDownloadableFile::cancel);
         executor.shutdownNow();
         trashRemovalExecutor.shutdownNow();
+        communicationComponent.close();
 
         try {
             Thread.sleep(1000);
