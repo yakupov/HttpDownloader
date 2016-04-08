@@ -27,9 +27,9 @@ import java.net.URL;
  */
 public class HttpCommunicationComponent implements ICommunicationComponent {
     public static final int DEFAULT_MAX_CONNECTIONS = 200;
-    public static final int DEFAULT_CONN_RQ_TIMEOUT = 3000;
-    public static final int DEFAULT_CONN_TIMEOUT = 3000;
-    public static final int DEFAULT_SOCKET_TIMEOUT = 6000;
+    public static final int DEFAULT_CONN_RQ_TIMEOUT = 6000;
+    public static final int DEFAULT_CONN_TIMEOUT = 6000;
+    public static final int DEFAULT_SOCKET_TIMEOUT = 10000;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 

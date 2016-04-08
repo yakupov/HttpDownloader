@@ -159,4 +159,19 @@ public class DownloadableFile implements IDownloadableFileInt {
     public String getLocator() {
         return locator;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final DownloadableFile that = (DownloadableFile) o;
+        return locator.equals(that.locator);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return locator.hashCode();
+    }
 }

@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -46,6 +47,8 @@ public class MainController implements Initializable, Closeable {
     public MenuItem newDownloadMenuItem;
     public MenuItem settingsMenuItem;
     public Label totalProgressCounterLabel;
+    public TableColumn<IDownloadableFile, Double> completionPercentColumn;
+    public TableColumn<IDownloadableFile, Integer> downloadSpeedColumn;
 
     public void openFileSubmitDialog() {
         try {
@@ -87,7 +90,6 @@ public class MainController implements Initializable, Closeable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        //TODO: try to do it declaratively
         newDownloadMenuItem.setAccelerator(KeyCombination.keyCombination("SHORTCUT+N"));
         settingsMenuItem.setAccelerator(KeyCombination.keyCombination("SHORTCUT+ALT+S"));
 
@@ -98,6 +100,10 @@ public class MainController implements Initializable, Closeable {
 
         allTasksTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
+        final DecimalFormat preferredDoubleFormat = new DecimalFormat("##0.00");
+
+        //Task state refresh. This is an ugly workaround, because it's not possible to make 'elements' of
+        //IDownloadableFile Observable, and there is no 'refreshPeriod' in the TableView.
         tableRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             final List<IDownloadableFile> oldSelection = new ArrayList<>(allTasksTableView.getSelectionModel().getSelectedItems());
             allTasksTableView.getItems().clear();
@@ -109,10 +115,43 @@ public class MainController implements Initializable, Closeable {
             final double totalProgress = dispatcher.getAllFiles().stream()
                     .mapToDouble(IDownloadableFile::getProgress)
                     .average().orElse(0);
-            totalProgressCounterLabel.setText(String.valueOf(totalProgress));
+            totalProgressCounterLabel.setText(preferredDoubleFormat.format(totalProgress * 100));
         }));
         tableRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
         tableRefreshTimeline.play();
+
+        //Format columns
+        completionPercentColumn.setCellFactory(column -> new TableCell<IDownloadableFile, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null || empty) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(preferredDoubleFormat.format(item * 100));
+                }
+            }
+        });
+
+        downloadSpeedColumn.setCellFactory(column -> new TableCell<IDownloadableFile, Integer>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null || empty) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    if (item >= 1e6) {
+                        setText(preferredDoubleFormat.format((double) item / 1e6) + " Mb/s");
+                    } else if (item >= 1e3) {
+                        setText(preferredDoubleFormat.format((double) item / 1e3) + " Kb/s");
+                    } else {
+                        setText(item + " b/s");
+                    }
+                }
+            }
+        });
     }
 
     @NotNull
@@ -122,7 +161,16 @@ public class MainController implements Initializable, Closeable {
 
     public void submitDownloadRequest(@NotNull DownloadRequest request) {
         logger.trace("New download request submitted: " + request);
-        dispatcher.submitFile(request.getUrl(), request.getOutputDir(), request.getNumberOfThreads());
+        try {
+            dispatcher.submitFile(request.getUrl(), request.getOutputDir(), request.getNumberOfThreads());
+        } catch (RuntimeException e) {
+            logger.error("Failed to submit the new file download request", e);
+            final Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Runtime error");
+            alert.setHeaderText("Failed to submit the new file download request");
+            alert.setContentText(e.getMessage() + "\nPlease see error details in application logs.");
+            alert.show();
+        }
     }
 
     @Override

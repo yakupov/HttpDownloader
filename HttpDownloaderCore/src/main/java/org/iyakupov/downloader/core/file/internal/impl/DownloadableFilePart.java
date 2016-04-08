@@ -74,7 +74,7 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
 
     @Override
     public void resumeDownload() {
-        if (status != CANCELLED && status != ERROR && status != DONE) {
+        if (status != CANCELLED && status != DONE) {
             status = PENDING;
         }
     }

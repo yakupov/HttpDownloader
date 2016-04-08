@@ -136,6 +136,8 @@ public class DispatchingQueue implements IDispatchingQueue {
     @Override
     public IDownloadableFile submitFile(String url, File outputDir, int nThreads) {
         final DownloadableFile downloadableFile = new DownloadableFile(url, outputDir, nThreads);
+        if (knownFiles.contains(downloadableFile))
+            throw new RuntimeException("Download request with this URL is already submitted: " + url);
         submitDownloadRequest(downloadableFile);
         return downloadableFile;
     }
@@ -173,13 +175,14 @@ public class DispatchingQueue implements IDispatchingQueue {
 
     @Override
     public boolean resumeDownload(IDownloadableFile file) {
-        if (file.getStatus() == DownloadStatus.PAUSED) {
+        if (file.getStatus() == DownloadStatus.PAUSED ||
+                file.getStatus() == DownloadStatus.ERROR && file.getDownloadableParts().size() > 0) {
             if (!knownFiles.contains(file)) {
                 logger.error("Trying to resume download of a forgotten file. File is already deleted?");
                 return false;
             }
             file.getDownloadableParts().stream()
-                    .filter(p -> p.getStatus() == DownloadStatus.PAUSE_CONFIRMED)
+                    .filter(p -> p.getStatus() == DownloadStatus.PAUSE_CONFIRMED || p.getStatus() == DownloadStatus.ERROR)
                     .forEach(p -> {
                         final IDownloadableFilePartInt partInt = (IDownloadableFilePartInt) p;
                         partInt.resumeDownload();
