@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -95,11 +96,10 @@ public class MainController implements Initializable, Closeable {
 
         //React on change of the thread pool size
         settingsModel.getTotalNumberOfThreadsProperty().addListener((observable, oldValue, newValue) -> {
-            logger.debug("Thread pool resize. Current file states:");
-            dispatcher.getAllFiles().forEach(f -> {
-                logger.debug("- " + f.getStatus() + " " + f.getOutputFile());
-                f.getDownloadableParts().forEach(p -> logger.debug("-- " + p.getStatus()));
-            });
+            if (logger.isDebugEnabled()) {
+                logger.debug("Thread pool resize. Current file and part states:");
+                logFileAndPartStatuses(dispatcher.getAllFiles());
+            }
 
             if (oldValue.intValue() != newValue.intValue())
                 dispatcher.setThreadPoolSize(newValue.intValue(), false);
@@ -188,24 +188,20 @@ public class MainController implements Initializable, Closeable {
 
     public void pauseTasks() {
         final List<IDownloadableFile> selectedFiles = allTasksTableView.getSelectionModel().getSelectedItems();
-
-        logger.debug("Pause. Current file states:");
-        selectedFiles.forEach(f -> {
-            logger.debug("- " + f.getStatus() + " " + f.getOutputFile());
-            f.getDownloadableParts().forEach(p -> logger.debug("-- " + p.getStatus()));
-        });
+        if (logger.isDebugEnabled()) {
+            logger.debug("Pause. Current selected file and part states:");
+            logFileAndPartStatuses(selectedFiles);
+        }
 
         selectedFiles.forEach(IDownloadableFile::pause);
     }
 
     public void resumeTasks() {
         final List<IDownloadableFile> selectedFiles = allTasksTableView.getSelectionModel().getSelectedItems();
-
-        logger.debug("Resume. Current file states:");
-        selectedFiles.forEach(f -> {
-            logger.debug("- " + f.getStatus() + " " + f.getOutputFile());
-            f.getDownloadableParts().forEach(p -> logger.debug("-- " + p.getStatus()));
-        });
+        if (logger.isDebugEnabled()) {
+            logger.debug("Resume. Current selected file and part states:");
+            logFileAndPartStatuses(selectedFiles);
+        }
 
         selectedFiles.stream()
                 .filter(f -> f.getStatus() == DownloadStatus.PAUSED || f.getStatus() == DownloadStatus.ERROR)
@@ -215,6 +211,11 @@ public class MainController implements Initializable, Closeable {
 
     public void cancelTasks() {
         final List<IDownloadableFile> selectedFiles = allTasksTableView.getSelectionModel().getSelectedItems();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Cancel. Current selected file and part states:");
+            logFileAndPartStatuses(selectedFiles);
+        }
+
         selectedFiles.forEach(f -> {
             f.cancel();
             dispatcher.forgetFile(f);
@@ -224,5 +225,12 @@ public class MainController implements Initializable, Closeable {
     public void closeApp() throws IOException {
         close();
         Platform.exit();
+    }
+
+    private void logFileAndPartStatuses(Collection<IDownloadableFile> selectedFiles) {
+        selectedFiles.forEach(f -> {
+            logger.debug("- " + f.getStatus() + " " + f.getOutputFile());
+            f.getDownloadableParts().forEach(p -> logger.debug("-- " + p.getStatus() + " " + p.getOutputFile()));
+        });
     }
 }

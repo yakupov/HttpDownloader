@@ -1,5 +1,7 @@
 package org.iyakupov.downloader.core;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.iyakupov.downloader.core.comms.CommunicationStatus;
 import org.iyakupov.downloader.core.comms.ICommunicationAlgorithm;
 import org.iyakupov.downloader.core.comms.ICommunicationComponent;
@@ -25,11 +27,11 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
+import static org.iyakupov.downloader.core.DownloadStatus.*;
 import static org.iyakupov.downloader.core.DownloadStatus.ERROR;
+import static org.iyakupov.downloader.core.comms.CommunicationStatus.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.iyakupov.downloader.core.comms.CommunicationStatus.*;
-import static org.iyakupov.downloader.core.DownloadStatus.*;
 
 /**
  * UT for HttpPartDownloadCommunicationAlgorithm
@@ -157,9 +159,18 @@ public class FilePartDownloadTest {
         return invocationOnMock -> {
             final Object[] invocationArguments = invocationOnMock.getArguments();
             assert (invocationArguments.length == 3);
+
             final byte[] res = new byte[dataLength];
             Arrays.fill(res, ((Long) invocationArguments[1]).byteValue());
-            return new HttpCommunicationResult(rc, "Irrelevant", new ByteArrayInputStream(res), res.length);
+
+            final HttpEntity responseEntity = mock(HttpEntity.class);
+            when(responseEntity.getContent()).thenReturn(new ByteArrayInputStream(res));
+
+            final CloseableHttpResponse response = mock(CloseableHttpResponse.class);
+            when(response.getEntity()).thenReturn(responseEntity);
+            doNothing().when(response).close();
+
+            return new HttpCommunicationResult(rc, "Irrelevant", response, res.length);
         };
     }
 

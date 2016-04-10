@@ -2,13 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b1568d7b-3142-4ea0-935b-46165db51fae" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/DownloadStatus.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/DownloadStatus.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFile.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFile.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFilePart.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/file/internal/impl/DownloadableFilePart.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/test/java/org/iyakupov/downloader/core/DispatcherTest.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/test/java/org/iyakupov/downloader/core/DispatcherTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/test/java/org/iyakupov/downloader/core/FilePartDownloadTest.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/test/java/org/iyakupov/downloader/core/FilePartDownloadTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpCommunicationComponent.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpCommunicationComponent.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpCommunicationResult.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpCommunicationResult.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpDownloadCheckCommunicationAlgorithm.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpDownloadCheckCommunicationAlgorithm.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpPartDownloadCommunicationAlgorithm.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/comms/impl/HttpPartDownloadCommunicationAlgorithm.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/file/internal/IDownloadableFilePartInt.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/file/internal/IDownloadableFilePartInt.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/comms/ICommunicationResult.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/main/java/org/iyakupov/downloader/core/comms/ICommunicationResult.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/main_window/MainController.java" afterPath="$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/main_window/MainController.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/src/test/java/org/iyakupov/downloader/core/ManualDownloaderTest.java" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/src/test/java/org/iyakupov/downloader/core/ManualDownloaderTest.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../HttpDownloaderCore/.idea/workspace.xml" />
     </list>
@@ -56,11 +59,14 @@
       <file leaf-file-name="MainController.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/main_window/MainController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.3888889">
-              <caret line="212" column="78" selection-start-line="212" selection-start-column="78" selection-end-line="212" selection-end-column="78" />
+            <state vertical-scroll-proportion="0.6111111">
+              <caret line="63" column="78" selection-start-line="63" selection-start-column="78" selection-end-line="63" selection-end-column="78" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#3298#3318#0" expanded="true" />
+                <element signature="e#2345#2368#0" expanded="true" />
+                <element signature="e#3327#3347#0" expanded="true" />
+                <element signature="e#7458#7459#0" expanded="true" />
+                <element signature="e#7494#7495#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -69,7 +75,7 @@
       <file leaf-file-name="DownloadableFile.class" pinned="false" current-in-tab="false">
         <entry file="jar://$MAVEN_REPOSITORY$/org/iyakupov/downloader/HttpDownloaderCore/1.0-SNAPSHOT/HttpDownloaderCore-1.0-SNAPSHOT.jar!/org/iyakupov/downloader/core/file/internal/impl/DownloadableFile.class">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-19.72">
+            <state vertical-scroll-proportion="0.0">
               <caret line="53" column="28" selection-start-line="53" selection-start-column="28" selection-end-line="53" selection-end-column="28" />
               <folding />
             </state>
@@ -103,6 +109,8 @@
                 <element signature="e#930#931#0" expanded="false" />
                 <element signature="e#1007#1008#0" expanded="false" />
                 <element signature="e#1050#1051#0" expanded="false" />
+                <element signature="e#1253#1254#0" expanded="false" />
+                <element signature="e#1305#1306#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -122,14 +130,14 @@
       </file>
       <file leaf-file-name="main.fxml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml">
+          <provider editor-type-id="JavaFX-Scene-Builder">
+            <state />
+          </provider>
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
               <caret line="19" column="67" selection-start-line="19" selection-start-column="67" selection-end-line="19" selection-end-column="67" />
               <folding />
             </state>
-          </provider>
-          <provider editor-type-id="JavaFX-Scene-Builder">
-            <state />
           </provider>
         </entry>
       </file>
@@ -258,9 +266,7 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="PackagesPane" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -449,6 +455,8 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -460,6 +468,7 @@
     <property name="aspect.path.notification.shown" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="extract.method.default.visibility" value="private" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -775,7 +784,13 @@
       <option name="project" value="LOCAL" />
       <updated>1460129024862</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Polish statuses">
+      <created>1460155956144</created>
+      <option name="number" value="00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1460155956144</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -832,7 +847,8 @@
     <MESSAGE value="Cleanup code. Improved context menus.&#10;Added total (average) progress counter.&#10;Looks like the app meets the requirements." />
     <MESSAGE value="Added FindBugs and code coverage analysis.&#10;Added primitive JAR assembly and logging to file. So, this task is sort of 'done'" />
     <MESSAGE value="Polish UI. Detect duplicate requests. TODO: process situations when the same file (e.g. with the same name) is downloaded from different sources" />
-    <option name="LAST_COMMIT_MESSAGE" value="Polish UI. Detect duplicate requests. TODO: process situations when the same file (e.g. with the same name) is downloaded from different sources" />
+    <MESSAGE value="Polish statuses" />
+    <option name="LAST_COMMIT_MESSAGE" value="Polish statuses" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -845,6 +861,65 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/new_download/NewDownloadController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="47" column="29" selection-start-line="47" selection-start-column="29" selection-end-line="47" selection-end-column="29" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/settings/SettingsModel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="33" column="42" selection-start-line="33" selection-start-column="42" selection-end-line="33" selection-end-column="42" />
+          <folding>
+            <element signature="imports" expanded="false" />
+            <element signature="e#651#652#0" expanded="false" />
+            <element signature="e#693#694#0" expanded="false" />
+            <element signature="e#761#762#0" expanded="false" />
+            <element signature="e#823#824#0" expanded="false" />
+            <element signature="e#881#882#0" expanded="false" />
+            <element signature="e#930#931#0" expanded="false" />
+            <element signature="e#1007#1008#0" expanded="false" />
+            <element signature="e#1050#1051#0" expanded="false" />
+            <element signature="e#1253#1254#0" expanded="false" />
+            <element signature="e#1305#1306#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/settings/SettingsController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="63" column="21" selection-start-line="63" selection-start-column="21" selection-end-line="63" selection-end-column="21" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml">
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="19" column="67" selection-start-line="19" selection-start-column="67" selection-end-line="19" selection-end-column="67" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/iyakupov/downloader/HttpDownloaderCore/1.0-SNAPSHOT/HttpDownloaderCore-1.0-SNAPSHOT.jar!/org/iyakupov/downloader/core/file/IDownloadableFile.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="21" column="12" selection-start-line="21" selection-start-column="12" selection-end-line="21" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/pom.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -867,7 +942,10 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#3298#3318#0" expanded="true" />
+            <element signature="e#2345#2368#0" expanded="true" />
+            <element signature="e#3327#3347#0" expanded="true" />
+            <element signature="e#7458#7459#0" expanded="true" />
+            <element signature="e#7494#7495#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -896,6 +974,8 @@
             <element signature="e#930#931#0" expanded="false" />
             <element signature="e#1007#1008#0" expanded="false" />
             <element signature="e#1050#1051#0" expanded="false" />
+            <element signature="e#1253#1254#0" expanded="false" />
+            <element signature="e#1305#1306#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -911,14 +991,14 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml">
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="19" column="67" selection-start-line="19" selection-start-column="67" selection-end-line="19" selection-end-column="67" />
           <folding />
         </state>
-      </provider>
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
       </provider>
     </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/org/iyakupov/downloader/HttpDownloaderCore/1.0-SNAPSHOT/HttpDownloaderCore-1.0-SNAPSHOT.jar!/org/iyakupov/downloader/core/file/IDownloadableFile.class">
@@ -951,7 +1031,10 @@
           <caret line="89" column="10" selection-start-line="89" selection-start-column="10" selection-end-line="89" selection-end-column="10" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#3298#3318#0" expanded="true" />
+            <element signature="e#2345#2368#0" expanded="true" />
+            <element signature="e#3327#3347#0" expanded="true" />
+            <element signature="e#7458#7459#0" expanded="true" />
+            <element signature="e#7494#7495#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -960,7 +1043,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="29" column="47" selection-start-line="29" selection-start-column="47" selection-end-line="29" selection-end-column="47" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -978,6 +1060,8 @@
             <element signature="e#930#931#0" expanded="false" />
             <element signature="e#1007#1008#0" expanded="false" />
             <element signature="e#1050#1051#0" expanded="false" />
+            <element signature="e#1253#1254#0" expanded="false" />
+            <element signature="e#1305#1306#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -993,36 +1077,34 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml">
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="50" column="30" selection-start-line="50" selection-start-column="30" selection-end-line="50" selection-end-column="30" />
           <folding />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/new_download/newDownload.fxml">
       <provider editor-type-id="JavaFX-Scene-Builder">
         <state />
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/new_download/newDownload.fxml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
-          <folding />
         </state>
-      </provider>
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/settings/settings.fxml">
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="9" column="4" selection-start-line="9" selection-start-column="4" selection-end-line="9" selection-end-column="4" />
-          <folding />
         </state>
-      </provider>
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pom.xml">
@@ -1047,7 +1129,10 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#3298#3318#0" expanded="true" />
+            <element signature="e#2345#2368#0" expanded="true" />
+            <element signature="e#3327#3347#0" expanded="true" />
+            <element signature="e#7458#7459#0" expanded="true" />
+            <element signature="e#7494#7495#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1056,7 +1141,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="29" column="47" selection-start-line="29" selection-start-column="47" selection-end-line="29" selection-end-column="47" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1074,6 +1158,8 @@
             <element signature="e#930#931#0" expanded="false" />
             <element signature="e#1007#1008#0" expanded="false" />
             <element signature="e#1050#1051#0" expanded="false" />
+            <element signature="e#1253#1254#0" expanded="false" />
+            <element signature="e#1305#1306#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1089,14 +1175,14 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml">
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="50" column="30" selection-start-line="50" selection-start-column="30" selection-end-line="50" selection-end-column="30" />
           <folding />
         </state>
-      </provider>
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/settings/ISettingsModel.java">
@@ -1107,25 +1193,23 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/new_download/newDownload.fxml">
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
-          <folding />
         </state>
-      </provider>
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/settings/settings.fxml">
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="9" column="4" selection-start-line="9" selection-start-column="4" selection-end-line="9" selection-end-column="4" />
-          <folding />
         </state>
-      </provider>
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
       </provider>
     </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/org/iyakupov/downloader/HttpDownloaderCore/1.0-SNAPSHOT/HttpDownloaderCore-1.0-SNAPSHOT.jar!/org/iyakupov/downloader/core/dispatch/impl/DispatchingQueue.class">
@@ -1157,32 +1241,29 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/settings/settings.fxml">
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="9" column="4" selection-start-line="9" selection-start-column="4" selection-end-line="9" selection-end-column="4" />
-          <folding />
         </state>
-      </provider>
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/new_download/newDownload.fxml">
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
-          <folding />
         </state>
-      </provider>
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/main_window/Main.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="29" column="47" selection-start-line="29" selection-start-column="47" selection-end-line="29" selection-end-column="47" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1231,14 +1312,14 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/resources/org/iyakupov/downloader/gui/main_window/main.fxml">
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="19" column="67" selection-start-line="19" selection-start-column="67" selection-end-line="19" selection-end-column="67" />
           <folding />
         </state>
-      </provider>
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/settings/SettingsModel.java">
@@ -1255,6 +1336,8 @@
             <element signature="e#930#931#0" expanded="false" />
             <element signature="e#1007#1008#0" expanded="false" />
             <element signature="e#1050#1051#0" expanded="false" />
+            <element signature="e#1253#1254#0" expanded="false" />
+            <element signature="e#1305#1306#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1268,7 +1351,7 @@
     </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/org/iyakupov/downloader/HttpDownloaderCore/1.0-SNAPSHOT/HttpDownloaderCore-1.0-SNAPSHOT.jar!/org/iyakupov/downloader/core/file/internal/impl/DownloadableFile.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-19.72">
+        <state vertical-scroll-proportion="0.0">
           <caret line="53" column="28" selection-start-line="53" selection-start-column="28" selection-end-line="53" selection-end-column="28" />
           <folding />
         </state>
@@ -1278,7 +1361,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.7118353">
           <caret line="542" column="158" selection-start-line="542" selection-start-column="158" selection-end-line="542" selection-end-column="158" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1286,17 +1368,19 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.24872231">
           <caret line="121" column="74" selection-start-line="121" selection-start-column="74" selection-end-line="121" selection-end-column="74" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/org/iyakupov/downloader/gui/main_window/MainController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3888889">
-          <caret line="212" column="78" selection-start-line="212" selection-start-column="78" selection-end-line="212" selection-end-column="78" />
+        <state vertical-scroll-proportion="0.6111111">
+          <caret line="63" column="78" selection-start-line="63" selection-start-column="78" selection-end-line="63" selection-end-column="78" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#3298#3318#0" expanded="true" />
+            <element signature="e#2345#2368#0" expanded="true" />
+            <element signature="e#3327#3347#0" expanded="true" />
+            <element signature="e#7458#7459#0" expanded="true" />
+            <element signature="e#7494#7495#0" expanded="true" />
           </folding>
         </state>
       </provider>

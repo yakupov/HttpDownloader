@@ -1,6 +1,8 @@
 package org.iyakupov.downloader.core;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.iyakupov.downloader.core.comms.CommunicationStatus;
 import org.iyakupov.downloader.core.comms.ICommunicationComponent;
 import org.iyakupov.downloader.core.comms.impl.HttpCommunicationResult;
@@ -94,12 +96,25 @@ public class DispatcherTest {
         when(communicationComponent.downloadRemoteFile(anyString(), anyLong(), anyLong())).thenAnswer(invocationOnMock -> {
             final Object[] invocationArguments = invocationOnMock.getArguments();
             assert (invocationArguments.length == 3);
+
             final int dataLength = ((Long) invocationArguments[2]).intValue();
             logger.debug("Creating new SleepyStream, dataLength = " + dataLength);
             final byte[] res = new byte[dataLength >= 0 ? dataLength : chunkSize];
             Arrays.fill(res, ((Long) invocationArguments[1]).byteValue());
-            return new HttpCommunicationResult(partDownloadRc, "Irrelevant",
-                    new SleepyByteArrayInputStream(res, readDelay), res.length);
+
+            final HttpEntity responseEntity = mock(HttpEntity.class);
+            final SleepyByteArrayInputStream dataStream = new SleepyByteArrayInputStream(res, readDelay);
+            when(responseEntity.getContent()).thenReturn(dataStream);
+
+            final CloseableHttpResponse response = mock(CloseableHttpResponse.class);
+            when(response.getEntity()).thenReturn(responseEntity);
+            doAnswer(invocationOnMock1 -> {
+                dataStream.close();
+                logger.trace("Closed mocked HTTP response");
+                return null;
+            }).when(response).close();
+
+            return new HttpCommunicationResult(partDownloadRc, "Irrelevant", response, res.length);
         });
 
         return new DispatchingQueue(defaultDispatcherThreadPoolSize, DispatchingQueue.DEFAULT_QUEUE_CAPACITY, communicationComponent);
@@ -303,8 +318,11 @@ public class DispatcherTest {
 
         // Wait to start download of each part. We expect to start them 'simultaneously', a long time before any of the
         // tasks may complete all five reads (100 ms to sleep << 5000 ms for 5 reads)
-        while (file1.getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count() < downloadablePartsPerFile)
-            safeSleep(100);
+        long counter;
+        while ((counter = file1.getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count()) < downloadablePartsPerFile) {
+            logger.trace("Not enough downloading parts: " + counter);
+            safeSleep(300);
+        }
 
         dispatcher.setThreadPoolSize(newNumberOfThreads, true);
         safeSleep(readDelay + allowedDelaysForASingleIteration); //ensure completion of a read operation

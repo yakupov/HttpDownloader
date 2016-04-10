@@ -3,14 +3,15 @@ package org.iyakupov.downloader.core.comms;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 /**
  * Represents the results of communication with an external resource (e.g. via a network).
- * Basically, it's a sort of Future without the possibility to block current thread until completion.
  */
-public interface ICommunicationResult {
+public interface ICommunicationResult extends Closeable {
     /**
      * @return Response code, indicating the status of this request.
      */
@@ -36,9 +37,10 @@ public interface ICommunicationResult {
      * or stores it in memory, null will be returned.
      *
      * @return Response data stream.
+     * @throws IOException
      */
     @Nullable
-    InputStream getResponseDataStream();
+    InputStream getResponseDataStream() throws IOException;
 
     /**
      * @return Size of the whole file or of the downloadable chunk.

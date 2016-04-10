@@ -62,6 +62,8 @@ public class DispatchingQueue implements IDispatchingQueue {
         executor.allowCoreThreadTimeOut(true);
 
         this.communicationComponent = communicationComponent;
+
+        logger.info("Started DispatchingQueue with thread pool size of " + maxNumberOfThreads);
     }
 
     @Override
@@ -105,17 +107,19 @@ public class DispatchingQueue implements IDispatchingQueue {
 
     @Override
     public synchronized void setThreadPoolSize(int newSize, boolean evictNonResumable) {
+        logger.info("Set new core and max pool size: " + newSize);
         executor.setCorePoolSize(newSize);
         executor.setMaximumPoolSize(newSize);
 
-        logger.debug("Set new core and max pool size: " + newSize);
-
-        int tasksToEvict = executor.getActiveCount() - newSize;
+        final int activeCount = executor.getActiveCount();
+        int tasksToEvict = activeCount - newSize;
+        logger.debug("Current active thread count: " + activeCount + ", tasks to evict: " + tasksToEvict);
 
         for (IDownloadableFilePartInt part: partDownloadTasks.keySet()) {
-            if (tasksToEvict-- <= 0)
-                break;
             if (part.getStatus() == DownloadStatus.DOWNLOADING && part.isDownloadResumeSupported()) {
+                if (tasksToEvict-- <= 0)
+                    break;
+
                 logger.warn("Evicted task because of the shortage of threads: "
                         + part.getLocator() + ", file = " + part.getOutputFile());
                 part.suspend();
@@ -124,9 +128,10 @@ public class DispatchingQueue implements IDispatchingQueue {
 
         if (evictNonResumable && tasksToEvict > 0) {
             for (IDownloadableFilePartInt part: partDownloadTasks.keySet()) {
-                if (tasksToEvict-- <= 0)
-                    break;
                 if (part.getStatus() == DownloadStatus.DOWNLOADING) {
+                    if (tasksToEvict-- <= 0)
+                        break;
+
                     logger.warn("Evicted task because of the shortage of threads: "
                             + part.getLocator() + ", file = " + part.getOutputFile());
                     part.suspend();

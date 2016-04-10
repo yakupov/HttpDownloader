@@ -1,10 +1,12 @@
 package org.iyakupov.downloader.core.comms.impl;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.iyakupov.downloader.core.comms.CommunicationStatus;
 import org.iyakupov.downloader.core.comms.ICommunicationResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
@@ -14,13 +16,13 @@ import java.nio.ByteBuffer;
 public class HttpCommunicationResult implements ICommunicationResult {
     private CommunicationStatus communicationStatus = CommunicationStatus.NOT_STARTED;
     private String message = null;
-    private InputStream responseDataStream = null;
+    private CloseableHttpResponse httpResponse = null;
     private long size = -1;
 
-    public HttpCommunicationResult(CommunicationStatus communicationStatus, String message, InputStream responseDataStream, long size) {
+    public HttpCommunicationResult(CommunicationStatus communicationStatus, String message, CloseableHttpResponse httpResponse, long size) {
         this.communicationStatus = communicationStatus;
         this.message = message;
-        this.responseDataStream = responseDataStream;
+        this.httpResponse = httpResponse;
         this.size = size;
     }
 
@@ -42,10 +44,23 @@ public class HttpCommunicationResult implements ICommunicationResult {
         return null;
     }
 
+    /**
+     * Returns a stream of response data. If this Communication contains no data
+     * or stores it in memory, null will be returned.
+     *
+     * @return Data stream.
+     * IMPORTANT. This stream is managed by the HttpClient. Closing it explicitly will harm the performance.
+     *
+     * @throws IOException
+     */
     @Nullable
     @Override
-    public InputStream getResponseDataStream() {
-        return responseDataStream;
+    public InputStream getResponseDataStream() throws IOException {
+        if (httpResponse != null && httpResponse.getEntity() != null) {
+            return httpResponse.getEntity().getContent();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -57,10 +72,16 @@ public class HttpCommunicationResult implements ICommunicationResult {
         return new Builder();
     }
 
+    @Override
+    public void close() throws IOException {
+        if (httpResponse != null)
+            httpResponse.close();
+    }
+
     public static class Builder {
         private CommunicationStatus communicationStatus;
         private String message;
-        private InputStream responseDataStream;
+        private CloseableHttpResponse httpResponse;
         private long size;
 
         public Builder setCommunicationStatus(CommunicationStatus communicationStatus) {
@@ -73,8 +94,8 @@ public class HttpCommunicationResult implements ICommunicationResult {
             return this;
         }
 
-        public Builder setResponseDataStream(InputStream responseDataStream) {
-            this.responseDataStream = responseDataStream;
+        public Builder setHttpResponse(CloseableHttpResponse httpResponse) {
+            this.httpResponse = httpResponse;
             return this;
         }
 
@@ -84,7 +105,7 @@ public class HttpCommunicationResult implements ICommunicationResult {
         }
 
         public HttpCommunicationResult createHttpCommunicationResult() {
-            return new HttpCommunicationResult(communicationStatus, message, responseDataStream, size);
+            return new HttpCommunicationResult(communicationStatus, message, httpResponse, size);
         }
     }
 }

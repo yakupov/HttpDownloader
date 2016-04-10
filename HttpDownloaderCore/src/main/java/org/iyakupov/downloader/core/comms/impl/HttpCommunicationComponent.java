@@ -3,10 +3,11 @@ package org.iyakupov.downloader.core.comms.impl;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
@@ -33,8 +34,7 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final PoolingHttpClientConnectionManager connectionManager;
-    private final HttpClient httpClient;
+    private final CloseableHttpClient httpClient;
     private final RequestConfig httpRequestConfig;
 
     public HttpCommunicationComponent() {
@@ -42,7 +42,7 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
     }
 
     public HttpCommunicationComponent(int maxConnections, int rqTimeout, int connTimeout, int socketTimeout) {
-        connectionManager = new PoolingHttpClientConnectionManager();
+        final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(maxConnections);
         connectionManager.setDefaultMaxPerRoute(maxConnections);
 
@@ -148,7 +148,7 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
             httpRequest.setConfig(httpRequestConfig);
 
             logger.debug("Executing request " + httpRequest.getURI());
-            final HttpResponse response = httpClient.execute(httpRequest);
+            final CloseableHttpResponse response = httpClient.execute(httpRequest);
             final int statusCode = response.getStatusLine().getStatusCode();
             logger.debug("HTTP response code: " + statusCode + ", reason = " +
                     response.getStatusLine().getReasonPhrase());
@@ -165,7 +165,7 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
                         resultBuilder.setCommunicationStatus(CommunicationStatus.OK);
                     }
                     resultBuilder.setSize(response.getEntity().getContentLength());
-                    resultBuilder.setResponseDataStream(response.getEntity().getContent());
+                    resultBuilder.setHttpResponse(response);
                 } else {
                     logger.error("Successful RC but no HTTP response entity");
                     resultBuilder.setCommunicationStatus(CommunicationStatus.ERROR);
@@ -189,6 +189,6 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
 
     @Override
     public void close() throws IOException {
-        connectionManager.close();
+        httpClient.close();
     }
 }

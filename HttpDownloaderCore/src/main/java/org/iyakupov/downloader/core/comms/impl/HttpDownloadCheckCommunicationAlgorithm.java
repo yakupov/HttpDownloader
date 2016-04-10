@@ -39,10 +39,9 @@ public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAl
     @Override
     public void run() {
         logger.debug("Started " + getClass().getSimpleName() + " for task " + file.getLocator());
-        final ICommunicationResult communicationResult = comm.checkRemoteFile(file.getLocator());
 
-        final int maxThreadCount = file.getMaxThreadCount();
-        try {
+        try(final ICommunicationResult communicationResult = comm.checkRemoteFile(file.getLocator())) {
+            final int maxThreadCount = file.getMaxThreadCount();
             if (maxThreadCount > 1 && communicationResult.getResponseCode() == CommunicationStatus.PARTIAL_CONTENT_OK) {
                 final long chunkSize = communicationResult.getSize() / maxThreadCount;
                 for (int i = 0; i < maxThreadCount; ++i) {

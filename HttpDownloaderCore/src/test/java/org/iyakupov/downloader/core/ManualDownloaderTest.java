@@ -10,7 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Temporary manual "integration" test
+ * Temporary manual "integration test"
  */
 @SuppressWarnings({"unused", "FieldCanBeLocal"})
 public class ManualDownloaderTest {

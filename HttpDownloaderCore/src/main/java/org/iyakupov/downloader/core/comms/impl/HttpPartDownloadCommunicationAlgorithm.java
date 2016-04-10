@@ -52,76 +52,77 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
             logger.debug("Started task, file = " + filePart.getOutputFile());
             filePart.start();
 
-            final ICommunicationResult communicationResult = comm.downloadRemoteFile(filePart.getLocator(),
-                    filePart.getCurrentStartPosition(), filePart.getRemainingLength());
-            if (filePart.getRemainingLength() < 0) {
-                logger.debug("Updating total length of chunk " + filePart.getOutputFile() +
-                        ". Now it's " + communicationResult.getSize());
-                filePart.updateTotalLength(communicationResult.getSize());
-            }
+            try (final ICommunicationResult communicationResult = comm.downloadRemoteFile(
+                    filePart.getLocator(), filePart.getCurrentStartPosition(), filePart.getRemainingLength())) {
+                if (filePart.getRemainingLength() < 0) {
+                    logger.debug("Updating total length of chunk " + filePart.getOutputFile() +
+                            ". Now it's " + communicationResult.getSize());
+                    filePart.updateTotalLength(communicationResult.getSize());
+                }
 
-            final boolean statusOk = communicationResult.getResponseCode() == CommunicationStatus.PARTIAL_CONTENT_OK ||
-                    !filePart.isDownloadResumeSupported() && communicationResult.getResponseCode() == CommunicationStatus.OK;
+                final boolean statusOk = communicationResult.getResponseCode() == CommunicationStatus.PARTIAL_CONTENT_OK ||
+                        !filePart.isDownloadResumeSupported() && communicationResult.getResponseCode() == CommunicationStatus.OK;
 
-            if (communicationResult.getResponseDataStream() != null && statusOk) {
-                final InputStream inputStream = communicationResult.getResponseDataStream();
-                try (OutputStream outputFileStream = new FileOutputStream(filePart.getOutputFile(), true)) {
-                    long bytesSinceLastMeasure = 0;
-                    long lastMeasureTimestamp = System.nanoTime();
-                    final byte[] buffer = new byte[BUFFER_SIZE];
-                    int lastRead;
-                    while ((lastRead = inputStream.read(buffer)) > 0) {
-                        if (filePart.getRemainingLength() >= 0 && lastRead > filePart.getRemainingLength())
-                            logger.warn("End of file was expected (basing on content-length), but the stream " +
-                                    "has not ended. Continuing download...");
+                if (communicationResult.getResponseDataStream() != null && statusOk) {
+                    final InputStream inputStream = communicationResult.getResponseDataStream();
+                    try (OutputStream outputFileStream = new FileOutputStream(filePart.getOutputFile(), true)) {
+                        long bytesSinceLastMeasure = 0;
+                        long lastMeasureTimestamp = System.nanoTime();
+                        final byte[] buffer = new byte[BUFFER_SIZE];
+                        int lastRead;
+                        while ((lastRead = inputStream.read(buffer)) > 0) {
+                            if (filePart.getRemainingLength() >= 0 && lastRead > filePart.getRemainingLength())
+                                logger.warn("End of file was expected (basing on content-length), but the stream " +
+                                        "has not ended. Continuing download...");
 
-                        //Copy
-                        logger.trace("Wrote " + lastRead + " bytes to " + filePart.getOutputFile());
-                        outputFileStream.write(buffer, 0, lastRead);
-                        outputFileStream.flush();
+                            //Copy
+                            logger.trace("Wrote " + lastRead + " bytes to " + filePart.getOutputFile());
+                            outputFileStream.write(buffer, 0, lastRead);
+                            outputFileStream.flush();
 
-                        //Increment counters
-                        filePart.incrementDownloadedBytesCount(lastRead);
-                        bytesSinceLastMeasure += lastRead;
-                        final long currentTime = System.nanoTime();
-                        if (currentTime - lastMeasureTimestamp > SPEED_MEASURE_THRESHOLD) {
-                            final double interval = ((double) (currentTime - lastMeasureTimestamp)) / 1e9;
-                            filePart.setDownloadSpeed((int) ((double) bytesSinceLastMeasure / interval));
-                            bytesSinceLastMeasure = 0;
-                            lastMeasureTimestamp = System.nanoTime();
-                        }
+                            //Increment counters
+                            filePart.incrementDownloadedBytesCount(lastRead);
+                            bytesSinceLastMeasure += lastRead;
+                            final long currentTime = System.nanoTime();
+                            if (currentTime - lastMeasureTimestamp > SPEED_MEASURE_THRESHOLD) {
+                                final double interval = ((double) (currentTime - lastMeasureTimestamp)) / 1e9;
+                                filePart.setDownloadSpeed((int) ((double) bytesSinceLastMeasure / interval));
+                                bytesSinceLastMeasure = 0;
+                                lastMeasureTimestamp = System.nanoTime();
+                            }
 
-                        //Check status
-                        if (filePart.getStatus() == CANCELLED) {
-                            logger.debug("Task " + filePart.getOutputFile() + " cancelled, exiting worker");
-                            return;
-                        } else if (filePart.getRemainingLength() > 0) {
-                            if (filePart.getStatus() == PAUSED || filePart.getStatus() == PAUSE_CONFIRMED) {
-                                filePart.confirmPause();
-                                logger.debug("Task " + filePart.getOutputFile() + " paused, exiting worker");
+                            //Check status
+                            if (filePart.getStatus() == CANCELLED) {
+                                logger.debug("Task " + filePart.getOutputFile() + " cancelled, exiting worker");
                                 return;
-                            } else if (filePart.getStatus() == SUSPENDED) {
-                                logger.info("Task " + filePart.getOutputFile() + " evicted, re-submitting");
-                                dispatcher.submitEvictedTask(filePart);
-                                return;
-                            } else if (filePart.getStatus() != DOWNLOADING) {
-                                logger.error("Running task was suspended with an unexpected status: " + filePart.getStatus());
-                                return;
+                            } else if (filePart.getRemainingLength() > 0) {
+                                if (filePart.getStatus() == PAUSED || filePart.getStatus() == PAUSE_CONFIRMED) {
+                                    filePart.confirmPause();
+                                    logger.debug("Task " + filePart.getOutputFile() + " paused, exiting worker");
+                                    return;
+                                } else if (filePart.getStatus() == SUSPENDED) {
+                                    logger.info("Task " + filePart.getOutputFile() + " evicted, re-submitting");
+                                    dispatcher.submitEvictedTask(filePart);
+                                    return;
+                                } else if (filePart.getStatus() != DOWNLOADING) {
+                                    logger.error("Running task was suspended with an unexpected status: " + filePart.getStatus());
+                                    return;
+                                }
                             }
                         }
                     }
+                } else if (communicationResult.getResponseCode() == CommunicationStatus.OK) {
+                    final String errorMessage = "Expected to be able to perform partial download of this file part, " +
+                            "but the server has returned unsuitable response code";
+                    logger.error(errorMessage);
+                    filePart.completeWithError(errorMessage);
+                    return;
+                } else {
+                    final String errorMessage = "Bad response code: " + communicationResult.getResponseCode();
+                    logger.error(errorMessage);
+                    filePart.completeWithError(errorMessage);
+                    return;
                 }
-            } else if (communicationResult.getResponseCode() == CommunicationStatus.OK) {
-                final String errorMessage = "Expected to be able to perform partial download of this file part, " +
-                        "but the server has returned unsuitable response code";
-                logger.error(errorMessage);
-                filePart.completeWithError(errorMessage);
-                return;
-            } else {
-                final String errorMessage = "Bad response code: " + communicationResult.getResponseCode();
-                logger.error(errorMessage);
-                filePart.completeWithError(errorMessage);
-                return;
             }
         } catch (FileNotFoundException e) {
             logger.error("Failed to write to a temporary file. File not found.", e);
