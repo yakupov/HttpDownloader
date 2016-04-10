@@ -113,28 +113,30 @@ public class DispatchingQueue implements IDispatchingQueue {
 
         final int activeCount = executor.getActiveCount();
         int tasksToEvict = activeCount - newSize;
-        logger.debug("Current active thread count: " + activeCount + ", tasks to evict: " + tasksToEvict);
+        if (tasksToEvict > 0) {
+            logger.debug("Current active thread count: " + activeCount + ", tasks to evict: " + tasksToEvict);
 
-        for (IDownloadableFilePartInt part: partDownloadTasks.keySet()) {
-            if (part.getStatus() == DownloadStatus.DOWNLOADING && part.isDownloadResumeSupported()) {
-                if (tasksToEvict-- <= 0)
-                    break;
-
-                logger.warn("Evicted task because of the shortage of threads: "
-                        + part.getLocator() + ", file = " + part.getOutputFile());
-                part.suspend();
-            }
-        }
-
-        if (evictNonResumable && tasksToEvict > 0) {
-            for (IDownloadableFilePartInt part: partDownloadTasks.keySet()) {
-                if (part.getStatus() == DownloadStatus.DOWNLOADING) {
+            for (IDownloadableFilePartInt part : partDownloadTasks.keySet()) {
+                if (part.getStatus() == DownloadStatus.DOWNLOADING && part.isDownloadResumeSupported()) {
                     if (tasksToEvict-- <= 0)
                         break;
 
                     logger.warn("Evicted task because of the shortage of threads: "
                             + part.getLocator() + ", file = " + part.getOutputFile());
                     part.suspend();
+                }
+            }
+
+            if (evictNonResumable && tasksToEvict > 0) {
+                for (IDownloadableFilePartInt part : partDownloadTasks.keySet()) {
+                    if (part.getStatus() == DownloadStatus.DOWNLOADING) {
+                        if (tasksToEvict-- <= 0)
+                            break;
+
+                        logger.warn("Evicted task because of the shortage of threads: "
+                                + part.getLocator() + ", file = " + part.getOutputFile());
+                        part.suspend();
+                    }
                 }
             }
         }

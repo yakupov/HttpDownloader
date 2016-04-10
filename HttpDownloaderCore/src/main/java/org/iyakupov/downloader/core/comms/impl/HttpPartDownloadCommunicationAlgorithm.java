@@ -128,9 +128,11 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
             logger.error("Failed to write to a temporary file. File not found.", e);
             filePart.completeWithError("Failed to write to a temporary file. File not found: " + e.getMessage());
             return;
-        } catch (IOException e) {
-            logger.error("Failed to read from HTTP stream or to write to the temporary file stream", e);
-            filePart.completeWithError("IO Exception: " + e.getMessage());
+        } catch (IOException | IllegalStateException e) {
+            if (filePart.getStatus() != CANCELLED) {
+                logger.error("Failed to read from HTTP stream or to write to the temporary file stream", e);
+                filePart.completeWithError("IO Exception: " + e.getMessage());
+            }
             return;
         } finally {
             filePart.setDownloadSpeed(0);

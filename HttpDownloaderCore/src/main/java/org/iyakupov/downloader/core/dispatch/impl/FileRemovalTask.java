@@ -27,9 +27,10 @@ public class FileRemovalTask implements Runnable {
     public void run() {
         final long startTime = System.nanoTime();
 
-        while (!file.delete()) {
+        while (file.exists() && !file.delete()) {
             if (System.nanoTime() - startTime > timeout) {
                 file.deleteOnExit();
+                return;
             } else {
                 try {
                     Thread.sleep(100);

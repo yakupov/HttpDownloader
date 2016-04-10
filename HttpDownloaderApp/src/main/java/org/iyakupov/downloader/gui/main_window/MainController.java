@@ -201,12 +201,18 @@ public class MainController implements Initializable, Closeable {
         if (logger.isDebugEnabled()) {
             logger.debug("Resume. Current selected file and part states:");
             logFileAndPartStatuses(selectedFiles);
+            logger.debug("All files:");
+            logFileAndPartStatuses(dispatcher.getAllFiles());
         }
 
         selectedFiles.stream()
                 .filter(f -> f.getStatus() == DownloadStatus.PAUSED || f.getStatus() == DownloadStatus.ERROR)
                 .forEach(dispatcher::resumeDownload);
-        selectedFiles.stream().forEach(f -> System.out.println(f.toString()));
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("All files after resume:");
+            logFileAndPartStatuses(dispatcher.getAllFiles());
+        }
     }
 
     public void cancelTasks() {

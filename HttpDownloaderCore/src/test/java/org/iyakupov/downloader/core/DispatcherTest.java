@@ -159,7 +159,7 @@ public class DispatcherTest {
         dispatcher.close();
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 15000)
     public void testOneFileEnoughThreads() throws IOException {
         final int chunkSize = 1000;
         final int numberOfThreads = 20;
@@ -187,7 +187,7 @@ public class DispatcherTest {
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 20000)
     public void testOneFileNotEnoughThreads() throws IOException {
         final int chunkSize = 1000;
         final int numberOfThreads = 1;
@@ -222,7 +222,7 @@ public class DispatcherTest {
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 20000)
     public void testTwoFilesEnoughThreads() throws IOException {
         final int chunkSize = 1000;
         final int numberOfThreads = 20;
@@ -254,7 +254,7 @@ public class DispatcherTest {
         assertEquals(chunkSize * downloadablePartsPerFile, file2.getOutputFile().length());
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 30000)
     public void testTwoFilesNotEnoughThreads() throws IOException {
         final int chunkSize = 1000;
         final int numberOfThreads = 3;
@@ -296,7 +296,7 @@ public class DispatcherTest {
         assertEquals(chunkSize * downloadablePartsPerFile, file2.getOutputFile().length());
     }
 
-    @Test(timeout = 30000)
+    @Test(timeout = 60000)
     public void testOneFileWithEviction() throws IOException {
         final int numberOfThreads = 20;
         final int newNumberOfThreads = 1;
@@ -343,7 +343,7 @@ public class DispatcherTest {
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
     }
 
-    @Test(timeout = 40000)
+    @Test(timeout = 60000)
     public void testAdditionAfterEviction() throws IOException {
         final int numberOfThreads = 20;
         final int newNumberOfThreads = 1;
@@ -394,7 +394,7 @@ public class DispatcherTest {
         assertEquals(chunkSize * downloadablePartsPerFile, file2.getOutputFile().length());
     }
 
-    @Test(timeout = 15000)
+    @Test(timeout = 30000)
     public void testOneFileWithExtension() throws IOException {
         final int numberOfThreads = 1;
         final int newNumberOfThreads = 20;
@@ -433,7 +433,7 @@ public class DispatcherTest {
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 15000)
     public void testOneFileCancel() throws IOException {
         final int chunkSize = 1000;
         final int numberOfThreads = 20;
@@ -461,7 +461,7 @@ public class DispatcherTest {
         file1.getDownloadableParts().forEach(p -> assertEquals(CANCELLED, p.getStatus()));
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 20000)
     public void testOneFilePauseResume() throws IOException {
         final int chunkSize = 1000;
         final int numberOfThreads = 20;
