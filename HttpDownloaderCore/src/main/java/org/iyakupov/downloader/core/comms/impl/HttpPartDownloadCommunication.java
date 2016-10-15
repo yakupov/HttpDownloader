@@ -1,52 +1,71 @@
 package org.iyakupov.downloader.core.comms.impl;
 
 import org.iyakupov.downloader.core.comms.CommunicationStatus;
-import org.iyakupov.downloader.core.comms.ICommunicationAlgorithm;
-import org.iyakupov.downloader.core.comms.ICommunicationComponent;
+import org.iyakupov.downloader.core.comms.ICommunication;
+import org.iyakupov.downloader.core.comms.ICommunicatingComponent;
 import org.iyakupov.downloader.core.comms.ICommunicationResult;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
-import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
+import org.iyakupov.downloader.core.dispatch.TaskPriority;
+import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFile;
 import org.iyakupov.downloader.core.file.IDownloadableFilePart;
-import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
+import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFilePart;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
 
-import static org.iyakupov.downloader.core.DownloadStatus.*;
+import static org.iyakupov.downloader.core.file.state.FilePartDownloadState.*;
 
 /**
  * This algorithm downloads data from HTTP stream to a temporary file
  */
-public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlgorithm {
+public class HttpPartDownloadCommunication implements ICommunication {
+    //TODO: parameters
     public final static long SPEED_MEASURE_THRESHOLD = (long) 1e9; //in nS
     public final static int BUFFER_SIZE = 4 * 1024; //4KBytes
 
-    private final static Logger logger = LoggerFactory.getLogger(HttpPartDownloadCommunicationAlgorithm.class);
+    private final Logger logger = LoggerFactory.getLogger(HttpPartDownloadCommunication.class);
 
-    private final int priority;
+    @NotNull
+    private final TaskPriority priority;
+
+    @NotNull
     private final IDispatchingQueue dispatcher;
-    private final ICommunicationComponent comm;
-    private final IDownloadableFilePartInt filePart;
 
-    public HttpPartDownloadCommunicationAlgorithm(int priority, IDispatchingQueue dispatcher, ICommunicationComponent comm, IDownloadableFilePartInt filePart) {
+    @NotNull
+    private final ICommunicatingComponent comm;
+
+    @NotNull
+    private final IManagedDownloadableFile file;
+
+    @NotNull
+    private final IManagedDownloadableFilePart filePart;
+
+    public HttpPartDownloadCommunication(@NotNull TaskPriority priority,
+                                         @NotNull IDispatchingQueue dispatcher,
+                                         @NotNull ICommunicatingComponent comm,
+                                         @NotNull IManagedDownloadableFile file,
+                                         @NotNull IManagedDownloadableFilePart filePart) {
         this.priority = priority;
         this.dispatcher = dispatcher;
         this.comm = comm;
+        this.file = file;
         this.filePart = filePart;
     }
 
     @Override
     public int getPriority() {
-        return priority;
+        return priority.getNumericValue();
     }
 
     @Override
     public void run() {
         try {
-            if (filePart.getStatus() != SUSPENDED && filePart.getStatus() != PENDING) {
-                logger.debug("Failed to start task " + filePart.getOutputFile() + ". Incorrect status: " + filePart.getStatus());
+            //FIXME
+            if (filePart.getStatus() != PENDING) {
+                logger.error("Failed to start task " + filePart.getOutputFile() + ". Incorrect status: " + filePart.getStatus());
                 return;
             }
             logger.debug("Started task, file = " + filePart.getOutputFile());
@@ -57,20 +76,22 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
                 if (filePart.getRemainingLength() < 0) {
                     logger.debug("Updating total length of chunk " + filePart.getOutputFile() +
                             ". Now it's " + communicationResult.getSize());
-                    filePart.updateTotalLength(communicationResult.getSize());
+                    if (!filePart.updateTotalLength(communicationResult.getSize()))
+                        logger.error("Failed to update the length of part " + filePart +
+                                ". Unexpected concurrent modification");
                 }
 
                 final boolean statusOk = communicationResult.getResponseCode() == CommunicationStatus.PARTIAL_CONTENT_OK ||
                         !filePart.isDownloadResumeSupported() && communicationResult.getResponseCode() == CommunicationStatus.OK;
 
-                if (communicationResult.getResponseDataStream() != null && statusOk) {
-                    final InputStream inputStream = communicationResult.getResponseDataStream();
+                final InputStream responseDataStream = communicationResult.getResponseDataStream();
+                if (responseDataStream != null && statusOk) {
                     try (OutputStream outputFileStream = new FileOutputStream(filePart.getOutputFile(), true)) {
                         long bytesSinceLastMeasure = 0;
                         long lastMeasureTimestamp = System.nanoTime();
                         final byte[] buffer = new byte[BUFFER_SIZE];
                         int lastRead;
-                        while ((lastRead = inputStream.read(buffer)) > 0) {
+                        while ((lastRead = responseDataStream.read(buffer)) > 0) {
                             if (filePart.getRemainingLength() >= 0 && lastRead > filePart.getRemainingLength())
                                 logger.warn("End of file was expected (basing on content-length), but the stream " +
                                         "has not ended. Continuing download...");
@@ -96,16 +117,16 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
                                 logger.debug("Task " + filePart.getOutputFile() + " cancelled, exiting worker");
                                 return;
                             } else if (filePart.getRemainingLength() > 0) {
-                                if (filePart.getStatus() == PAUSED || filePart.getStatus() == PAUSE_CONFIRMED) {
-                                    filePart.confirmPause();
+                                if (filePart.getStatus() == PAUSE_REQUESTED) {
                                     logger.debug("Task " + filePart.getOutputFile() + " paused, exiting worker");
+                                    filePart.confirmPause();
                                     return;
-                                } else if (filePart.getStatus() == SUSPENDED) {
+                                } else if (filePart.getStatus() == SUSPEND_REQUESTED) {
                                     logger.info("Task " + filePart.getOutputFile() + " evicted, re-submitting");
-                                    dispatcher.submitEvictedTask(filePart);
+                                    dispatcher.reSubmitEvictedTask(file, filePart);
                                     return;
                                 } else if (filePart.getStatus() != DOWNLOADING) {
-                                    logger.error("Running task was suspended with an unexpected status: " + filePart.getStatus());
+                                    logger.error("Running task was aborted with an unexpected status: " + filePart.getStatus());
                                     return;
                                 }
                             }
@@ -142,7 +163,6 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
 
         try {
             if (filePart.getRemainingLength() <= 0) {
-                final IDownloadableFileInt file = dispatcher.getParentFile(filePart);
                 filePart.completeSuccessfully();
                 if (file.decrementAndGetNonSuccessfullyDownloadedPartsCount() == 0) {
                     combineTemporaryFiles(file);
@@ -161,9 +181,9 @@ public class HttpPartDownloadCommunicationAlgorithm implements ICommunicationAlg
      * Combine all temporary files into one resulting file.
      *
      * @param file File download request
-     * @throws IOException
+     * @throws IOException in case of any problems reading or writing files
      */
-    private void combineTemporaryFiles(IDownloadableFileInt file) throws IOException {
+    private void combineTemporaryFiles(IManagedDownloadableFile file) throws IOException {
         if (file.getDownloadableParts().size() <= 1) {
             file.markAsSaved();
             return; //Already in the resulting file

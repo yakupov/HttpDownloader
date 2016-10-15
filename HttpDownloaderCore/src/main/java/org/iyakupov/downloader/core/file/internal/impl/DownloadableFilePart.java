@@ -1,36 +1,38 @@
 package org.iyakupov.downloader.core.file.internal.impl;
 
-import org.iyakupov.downloader.core.DownloadStatus;
-import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
+import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFilePart;
+import org.iyakupov.downloader.core.file.state.FilePartDownloadState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static org.iyakupov.downloader.core.DownloadStatus.*;
+import static org.iyakupov.downloader.core.file.state.FilePartDownloadState.*;
 
 /**
  * Continuous chunk of a file that is downloaded and stored in a temporary file.
  */
-public class DownloadableFilePart implements IDownloadableFilePartInt {
+public class DownloadableFilePart implements IManagedDownloadableFilePart {
     private final File outputFile;
-
     private final String locator;
-
     private final long start;
-    private long length;
-    private boolean partialDownloadSupported = true;
 
-    private volatile DownloadStatus status = PENDING;
+    //These data elements are OK for publishing via race
+    private volatile boolean partialDownloadSupported = true;
     private volatile int downloadSpeed = 0;
-    private volatile long downloadedBytesCount = 0;
     private volatile String errorText = null;
+
+    private AtomicReference<FilePartDownloadState> status = new AtomicReference<>(PENDING);
+    private AtomicLong downloadedBytesCount = new AtomicLong(0);
+    private AtomicLong length;
 
     public DownloadableFilePart(File outputFile, String locator, long start, long length) {
         this.outputFile = outputFile;
         this.locator = locator;
         this.start = start;
-        this.length = length;
+        this.length = new AtomicLong(length);
     }
 
     @Override
@@ -45,76 +47,82 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
 
     @NotNull
     @Override
-    public DownloadStatus getStatus() {
-        return status;
+    public FilePartDownloadState getStatus() {
+        return status.get();
     }
 
     @Override
     public double getProgress() {
-        if (length <= 0) {
+        if (length.get() <= 0) {
             return 0;
         } else {
-            return (double) downloadedBytesCount / length;
+            return (double) downloadedBytesCount.get() / length.get();
         }
     }
 
     @Override
-    public void pause() {
-        if (status != CANCELLED && status != ERROR && status != DONE && status != PAUSE_CONFIRMED) {
-            if (status != DOWNLOADING)
-                status = PAUSE_CONFIRMED;
-            else
-                status = PAUSED;
-        }
+    public boolean suspend() {
+        final FilePartDownloadState currentState = status.get();
+        final FilePartDownloadState nextState = currentState.onSuspendRequest();
+        return status.compareAndSet(currentState, nextState);
     }
 
     @Override
-    public void suspend() {
-        if (status != CANCELLED && status != ERROR && status != DONE) {
-            status = SUSPENDED;
-        }
+    public boolean pause() {
+        final FilePartDownloadState currentState = status.get();
+        final FilePartDownloadState nextState = currentState.onPauseRequest();
+        return status.compareAndSet(currentState, nextState);
     }
 
     @Override
-    public void resumeDownload() {
-        if (status != CANCELLED && status != DONE) {
-            status = PENDING;
-        }
+    public boolean confirmPause() {
+        final FilePartDownloadState currentState = status.get();
+        final FilePartDownloadState nextState = currentState.onPauseConfirm();
+        return status.compareAndSet(currentState, nextState);
     }
 
     @Override
-    public void confirmPause() {
-        if (status == PAUSED)
-            status = PAUSE_CONFIRMED;
+    public boolean resume() {
+        final FilePartDownloadState currentState = status.get();
+        final FilePartDownloadState nextState = currentState.onResume();
+        return status.compareAndSet(currentState, nextState);
     }
 
     @Override
-    public void start() {
-        if (status != CANCELLED && status != ERROR && status != DONE) {
-            if (!partialDownloadSupported) {
-                downloadedBytesCount = 0;
-            }
-            status = DOWNLOADING;
-        }
+    public boolean confirmSuspendAndRestart() {
+        final FilePartDownloadState currentState = status.get();
+        if (currentState != SUSPEND_REQUESTED)
+            return false;
+        final FilePartDownloadState nextState = currentState.onPauseConfirm().onResume();
+        return status.compareAndSet(currentState, nextState);
     }
 
     @Override
-    public void cancel() {
-        status = CANCELLED;
+    public boolean start() {
+        final FilePartDownloadState currentState = status.get();
+        final FilePartDownloadState nextState = currentState.onStarted();
+        return status.compareAndSet(currentState, nextState);
     }
 
     @Override
-    public void completeSuccessfully() {
-        if (status != CANCELLED && status != ERROR) {
-            status = DONE;
-            length = downloadedBytesCount;
-        }
+    public boolean cancel() {
+        final FilePartDownloadState currentState = status.get();
+        final FilePartDownloadState nextState = currentState.onCancel();
+        return status.compareAndSet(currentState, nextState);
+    }
+
+    @Override
+    public boolean completeSuccessfully() {
+        final FilePartDownloadState currentState = status.get();
+        final FilePartDownloadState nextState = currentState.onCompleted();
+        return status.compareAndSet(currentState, nextState);
     }
 
     @Override
     public void completeWithError(@NotNull String errorMessage) {
-        if (status != CANCELLED) {
-            status = ERROR;
+        final FilePartDownloadState currentState = status.get();
+        final FilePartDownloadState nextState = currentState.onError();
+        if (status.compareAndSet(currentState, nextState) && currentState != nextState) {
             this.errorText = errorMessage;
         }
     }
@@ -138,27 +146,27 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
     }
 
     @Override
-    public synchronized long getCurrentStartPosition() {
-        return start + downloadedBytesCount;
+    public long getCurrentStartPosition() {
+        return start + downloadedBytesCount.get();
     }
 
     @Override
-    public synchronized long getRemainingLength() {
-        if (length < 0)
+    public long getRemainingLength() {
+        if (length.get() < 0)
             return -1;
         else
-            return length - downloadedBytesCount;
+            return length.get() - downloadedBytesCount.get();
     }
 
     @Override
-    public synchronized void incrementDownloadedBytesCount(long diff) {
-        downloadedBytesCount += diff;
+    public void incrementDownloadedBytesCount(long diff) {
+        downloadedBytesCount.addAndGet(diff);
     }
 
     @Override
-    public void updateTotalLength(long length) {
-        if (this.length < 0)
-            this.length = length;
+    public boolean updateTotalLength(long newLength) {
+        final long prevLength = length.get();
+        return prevLength < 0 && length.compareAndSet(prevLength, newLength);
     }
 
     @Override
@@ -169,5 +177,17 @@ public class DownloadableFilePart implements IDownloadableFilePartInt {
     @Override
     public void setDownloadResumeNotSupported() {
         partialDownloadSupported = false;
+    }
+
+    @Override
+    public String toString() {
+        return "DownloadableFilePart{" +
+                "outputFile=" + outputFile +
+                ", locator='" + locator + '\'' +
+                ", start=" + start +
+                ", partialDownloadSupported=" + partialDownloadSupported +
+                ", errorText='" + errorText + '\'' +
+                ", status=" + status +
+                '}';
     }
 }

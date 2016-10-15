@@ -2,6 +2,7 @@ package org.iyakupov.downloader.core;
 
 import org.iyakupov.downloader.core.dispatch.impl.DispatchingQueue;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
+import org.iyakupov.downloader.core.file.state.FileDownloadState;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -34,9 +35,9 @@ public class ManualDownloaderTest {
         IDownloadableFile downloadableFile2 = null;
 
         int i = 0;
-        while (downloadableFile.getStatus() != DownloadStatus.DONE &&
-                downloadableFile.getStatus() != DownloadStatus.ERROR &&
-                downloadableFile.getStatus() != DownloadStatus.CANCELLED) {
+        while (downloadableFile.getStatus() != FileDownloadState.DONE &&
+                downloadableFile.getStatus() != FileDownloadState.FAILED &&
+                downloadableFile.getStatus() != FileDownloadState.CANCELLED) {
             System.out.println("Status: " + downloadableFile.getStatus());
             System.out.println("Speed: " + downloadableFile.getDownloadSpeed());
             System.out.println("Progress: " + downloadableFile.getProgress());
@@ -76,7 +77,7 @@ public class ManualDownloaderTest {
 
         System.out.println("DONE, status = " + downloadableFile.getStatus());
 
-        while (downloadableFile2 != null && downloadableFile2.getStatus() != DownloadStatus.DONE && downloadableFile2.getStatus() != DownloadStatus.ERROR) {
+        while (downloadableFile2 != null && downloadableFile2.getStatus() != FileDownloadState.DONE && downloadableFile2.getStatus() != FileDownloadState.FAILED) {
             System.out.println("Status: " + downloadableFile2.getStatus());
             System.out.println("Speed: " + downloadableFile2.getDownloadSpeed());
             System.out.println("Progress: " + downloadableFile2.getProgress());

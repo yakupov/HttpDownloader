@@ -7,7 +7,7 @@ import java.io.Closeable;
 /**
  * Abstraction for performance of communications with external systems
  */
-public interface ICommunicationComponent extends Closeable {
+public interface ICommunicatingComponent extends Closeable {
     /**
      * Try to connect to external resource but don't download the file.
      *

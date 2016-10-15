@@ -1,10 +1,10 @@
 package org.iyakupov.downloader.core.file;
 
-import org.iyakupov.downloader.core.DownloadStatus;
+import org.iyakupov.downloader.core.file.state.FileDownloadState;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * This interface represents a file download request.
@@ -17,7 +17,7 @@ public interface IDownloadableFile {
     int getDownloadSpeed();
 
     @NotNull
-    DownloadStatus getStatus();
+    FileDownloadState getStatus();
 
     /**
      * @return Number of threads that download parts of this file
@@ -35,22 +35,26 @@ public interface IDownloadableFile {
     double getProgress();
 
     /**
-     * Sets statuses of all parts of this file to PAUSED.
+     * Sets statuses of all parts of this file to SUSPENDED.
      * This will cause download of all parts of this file to be suspended.
+     *
+     * @return Whether the status was changed. If not - possibly because the status was changed by another thread.
      */
-    void pause();
+    boolean pause();
 
     /**
      * Sets statuses of all parts of this file to CANCELLED.
      * This will cause download of all parts of this file to be cancelled.
+     *
+     * @return Whether the status was changed. If not - possibly because the status was changed by another thread.
      */
-    void cancel();
+    boolean cancel();
 
     /**
      * @return Ordered list of downloadable pieces of this file.
      */
     @NotNull
-    List<IDownloadableFilePart> getDownloadableParts();
+    Collection<? extends IDownloadableFilePart> getDownloadableParts();
 
      /**
      * @return {@link File} that points to the point where this file should be stored.

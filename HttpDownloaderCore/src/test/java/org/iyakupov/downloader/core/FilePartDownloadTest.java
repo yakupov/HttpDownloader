@@ -3,18 +3,20 @@ package org.iyakupov.downloader.core;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.iyakupov.downloader.core.comms.CommunicationStatus;
-import org.iyakupov.downloader.core.comms.ICommunicationAlgorithm;
-import org.iyakupov.downloader.core.comms.ICommunicationComponent;
+import org.iyakupov.downloader.core.comms.ICommunication;
+import org.iyakupov.downloader.core.comms.ICommunicatingComponent;
 import org.iyakupov.downloader.core.comms.ICommunicationResult;
 import org.iyakupov.downloader.core.comms.impl.HttpCommunicationResult;
-import org.iyakupov.downloader.core.comms.impl.HttpPartDownloadCommunicationAlgorithm;
+import org.iyakupov.downloader.core.comms.impl.HttpPartDownloadCommunication;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.dispatch.TaskPriority;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
-import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
-import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
+import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFile;
+import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFilePart;
 import org.iyakupov.downloader.core.file.internal.impl.DownloadableFile;
 import org.iyakupov.downloader.core.file.internal.impl.DownloadableFilePart;
+import org.iyakupov.downloader.core.file.state.FileDownloadState;
+import org.iyakupov.downloader.core.file.state.FilePartDownloadState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Test;
@@ -27,35 +29,37 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import static org.iyakupov.downloader.core.DownloadStatus.*;
-import static org.iyakupov.downloader.core.DownloadStatus.ERROR;
+import static org.iyakupov.downloader.core.file.state.FileDownloadState.*;
+import static org.iyakupov.downloader.core.file.state.FileDownloadState.FAILED;
 import static org.iyakupov.downloader.core.comms.CommunicationStatus.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 /**
- * UT for HttpPartDownloadCommunicationAlgorithm
+ * UT for HttpPartDownloadCommunication
  */
+//FIXME: this test of state machine (or WTF is this) seems too complicated/useless
+@SuppressWarnings("WeakerAccess") //TODO: remove suppression
 public class FilePartDownloadTest {
     private static class ExpectedState {
         @NotNull
         final CommunicationStatus communicationStatus;
         @NotNull
-        final DownloadStatus partStatus;
+        final FilePartDownloadState partStatus;
         @NotNull
-        final DownloadStatus fileStatusAfterThisStep;
+        final FileDownloadState fileStatusAfterThisStep;
         @Nullable
         final Consumer<IDownloadableFile> actionOnFile;
 
         public ExpectedState(@NotNull CommunicationStatus communicationStatus,
-                             @NotNull DownloadStatus partStatus,
-                             @NotNull DownloadStatus fileStatusAfterThisStep) {
+                             @NotNull FilePartDownloadState partStatus,
+                             @NotNull FileDownloadState fileStatusAfterThisStep) {
             this(communicationStatus, partStatus, fileStatusAfterThisStep, null);
         }
 
         public ExpectedState(@NotNull CommunicationStatus communicationStatus,
-                             @NotNull DownloadStatus partStatus,
-                             @NotNull DownloadStatus fileStatusAfterThisStep,
+                             @NotNull FilePartDownloadState partStatus,
+                             @NotNull FileDownloadState fileStatusAfterThisStep,
                              @Nullable Consumer<IDownloadableFile> actionOnFile) {
             this.communicationStatus = communicationStatus;
             this.partStatus = partStatus;
@@ -90,19 +94,19 @@ public class FilePartDownloadTest {
         final int desiredPartsCount = expectedStates.length;
         final int chunkSize = fileSize / desiredPartsCount;
 
-        final IDownloadableFileInt file = new DownloadableFile(fileUrl, outputDir, desiredPartsCount);
+        final IManagedDownloadableFile file = new DownloadableFile(fileUrl, outputDir, desiredPartsCount);
         assertEquals(INITIATED, file.getStatus());
 
         final IDispatchingQueue dispatchingQueue = mock(IDispatchingQueue.class);
-        doNothing().when(dispatchingQueue).submitEvictedTask(any());
-        when(dispatchingQueue.getParentFile(any())).thenReturn(file);
+       // doNothing().when(dispatchingQueue).reSubmitEvictedTask(any());
+       // when(dispatchingQueue.getParentFile(any())).thenReturn(file); //TODO: delete or rethink
 
-        final IDownloadableFilePartInt[] partsArray = new IDownloadableFilePartInt[desiredPartsCount];
+        final IManagedDownloadableFilePart[] partsArray = new IManagedDownloadableFilePart[desiredPartsCount];
         for (int i = 0; i < desiredPartsCount; ++i) {
             final File outputFile = new File(file.getOutputFile().getAbsolutePath() + "_part" + i);
             //noinspection ResultOfMethodCallIgnored
             outputFile.delete();
-            final IDownloadableFilePartInt part = new DownloadableFilePart(
+            final IManagedDownloadableFilePart part = new DownloadableFilePart(
                     outputFile,
                     file.getLocator(),
                     i * chunkSize,
@@ -117,19 +121,19 @@ public class FilePartDownloadTest {
             logger.trace("Executing download of the part #" + i +
                     ", expected communication status is " + expectedStates[i].communicationStatus);
 
-            final ICommunicationComponent communicationComponent = mock(ICommunicationComponent.class);
+            final ICommunicatingComponent communicationComponent = mock(ICommunicatingComponent.class);
             when(communicationComponent.downloadRemoteFile(anyString(), anyLong(), anyLong()))
                     .thenAnswer(createResponseGenerator(expectedStates[i].communicationStatus,
                             i < desiredPartsCount - 1 ? chunkSize : chunkSize + fileSize % chunkSize));
 
-            final ICommunicationAlgorithm communicationAlgorithm =
-                    new HttpPartDownloadCommunicationAlgorithm(TaskPriority.NEW_PART_DOWNLOAD.getPriority(),
-                            dispatchingQueue, communicationComponent, partsArray[i]);
+            final ICommunication communicationAlgorithm =
+                    new HttpPartDownloadCommunication(TaskPriority.NEW_PART_DOWNLOAD,
+                            dispatchingQueue, communicationComponent, file, partsArray[i]);
             communicationAlgorithm.run();
 
             assertEquals(expectedStates[i].partStatus, partsArray[i].getStatus());
             assertEquals(expectedStates[i].fileStatusAfterThisStep, file.getStatus());
-            if (partsArray[i].getStatus() == DONE && i < desiredPartsCount - 1) {
+            if (partsArray[i].getStatus() == FilePartDownloadState.DONE && i < desiredPartsCount - 1) {
                 assertEquals(chunkSize, partsArray[i].getOutputFile().length());
             }
 
@@ -144,11 +148,11 @@ public class FilePartDownloadTest {
         if (file.getStatus() == DONE)
             assertEquals(fileSize, file.getOutputFile().length());
 
-        verify(dispatchingQueue, never()).submitEvictedTask(any());
+        verify(dispatchingQueue, never()).reSubmitEvictedTask(any(), any());
     }
 
     /**
-     * Defines the behavior of a {@link ICommunicationComponent} mock
+     * Defines the behavior of a {@link ICommunicatingComponent} mock
      *
      * @param rc         {@link CommunicationStatus} to return
      * @param dataLength Number of bytes in the returned data stream
@@ -177,65 +181,65 @@ public class FilePartDownloadTest {
     @Test
     public void testSuccessfulPartialDownload() {
         testCommon(100,
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, DONE)
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, DONE)
         );
     }
 
     @Test
     public void testWithError() {
         testCommon(100,
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(PARTIAL_CONTENT_NOK, ERROR, ERROR),
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, ERROR)
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(PARTIAL_CONTENT_NOK, FilePartDownloadState.FAILED, FAILED),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, FAILED)
         );
     }
 
     @Test
     public void testWithPartialContentError() {
         testCommon(100,
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(OK, ERROR, ERROR)
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(OK, FilePartDownloadState.FAILED, FAILED)
         );
     }
 
     @Test
     public void testCancel() {
         testCommon(100,
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING, IDownloadableFile::cancel),
-                new ExpectedState(PARTIAL_CONTENT_OK, CANCELLED, CANCELLED)
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING, IDownloadableFile::cancel),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.CANCELLED, CANCELLED)
         );
     }
 
     @Test
     public void testPause() {
         testCommon(100,
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING, IDownloadableFile::pause),
-                new ExpectedState(PARTIAL_CONTENT_OK, PAUSE_CONFIRMED, PAUSED)
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING, IDownloadableFile::pause),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.PAUSED, PAUSED)
         );
     }
 
     @Test
     public void testPauseThenCancel() {
         testCommon(100,
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING, IDownloadableFile::pause),
-                new ExpectedState(PARTIAL_CONTENT_OK, PAUSE_CONFIRMED, PAUSED, IDownloadableFile::cancel),
-                new ExpectedState(PARTIAL_CONTENT_OK, CANCELLED, CANCELLED)
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING, IDownloadableFile::pause),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.PAUSED, PAUSED, IDownloadableFile::cancel),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.CANCELLED, CANCELLED)
         );
     }
 
     @Test
     public void testCancelThenPause() {
         testCommon(100,
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING, IDownloadableFile::cancel),
-                new ExpectedState(PARTIAL_CONTENT_OK, CANCELLED, CANCELLED, IDownloadableFile::pause),
-                new ExpectedState(PARTIAL_CONTENT_OK, CANCELLED, CANCELLED)
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING, IDownloadableFile::cancel),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.CANCELLED, CANCELLED, IDownloadableFile::pause),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.CANCELLED, CANCELLED)
         );
     }
 
@@ -243,30 +247,30 @@ public class FilePartDownloadTest {
     @Test
     public void testErrorThenPause() {
         testCommon(100,
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(OK, ERROR, ERROR, IDownloadableFile::pause),
-                new ExpectedState(PARTIAL_CONTENT_OK, PAUSE_CONFIRMED, ERROR)
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(OK, FilePartDownloadState.FAILED, FAILED, IDownloadableFile::pause),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.PAUSED, FAILED)
         );
     }
 
     @Test
     public void testErrorThenCancel() {
         testCommon(100,
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(OK, ERROR, ERROR, IDownloadableFile::cancel),
-                new ExpectedState(PARTIAL_CONTENT_OK, CANCELLED, CANCELLED)
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(OK, FilePartDownloadState.FAILED, FAILED, IDownloadableFile::cancel),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.CANCELLED, CANCELLED)
         );
     }
 
     @Test
     public void testPauseAndResume() {
         testCommon(100,
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING),
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, PENDING, f -> {
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING),
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, PENDING, f -> {
                     f.pause();
-                    f.getDownloadableParts().forEach(p -> ((IDownloadableFilePartInt) p).resumeDownload());
+                    f.getDownloadableParts().forEach(p -> ((IManagedDownloadableFilePart) p).resume());
                 }),
-                new ExpectedState(PARTIAL_CONTENT_OK, DONE, DONE)
+                new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, DONE)
         );
     }
 

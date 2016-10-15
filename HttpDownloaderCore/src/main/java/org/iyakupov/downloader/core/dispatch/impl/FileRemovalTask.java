@@ -7,18 +7,18 @@ import java.io.File;
 /**
  * Task for save and asynchronous file deletion
  */
-public class FileRemovalTask implements Runnable {
-    public static final long DEFAULT_TIMEOUT = (long) 10e9; //10 seconds in ns
+class FileRemovalTask implements Runnable {
+    private static final long DEFAULT_TIMEOUT = (long) 10e9; //10 seconds in ns
 
     @NotNull
     private final File file;
     private final long timeout;
 
-    public FileRemovalTask(@NotNull File file) {
+    FileRemovalTask(@NotNull File file) {
         this(file, DEFAULT_TIMEOUT);
     }
 
-    public FileRemovalTask(@NotNull File file, long timeout) {
+    private FileRemovalTask(@NotNull File file, long timeout) {
         this.file = file;
         this.timeout = timeout;
     }

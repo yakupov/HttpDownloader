@@ -7,6 +7,10 @@ package org.iyakupov.downloader.core.comms;
  * Transfer of data from a remote HTTP Server to a local HDD is a good example of
  * a "communication".
  */
-public interface ICommunicationAlgorithm extends Runnable {
+public interface ICommunication extends Runnable {
+    /**
+     * @return The numeric value of this communications priority.
+     * The higher value means the higher priority of a task.
+     */
     int getPriority();
 }

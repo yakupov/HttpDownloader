@@ -1,33 +1,33 @@
 package org.iyakupov.downloader.core.file.internal.impl;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.io.FilenameUtils;
-import org.iyakupov.downloader.core.DownloadStatus;
-import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
+import org.iyakupov.downloader.core.file.state.FileDownloadState;
+import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFile;
 import org.iyakupov.downloader.core.file.IDownloadableFilePart;
-import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
+import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFilePart;
+import org.iyakupov.downloader.core.file.state.FilePartDownloadState;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.iyakupov.downloader.core.DownloadStatus.*;
+import static org.iyakupov.downloader.core.file.state.FileDownloadState.*;
 
 /**
  * File download request default implementation
  */
-public class DownloadableFile implements IDownloadableFileInt {
+public class DownloadableFile implements IManagedDownloadableFile {
     private final String locator;
     private final File outputFile;
     private final int maxThreadCount;
 
-    private volatile boolean fileSaved = false;
-    private volatile boolean errorHappened = false;
+    private final List<IManagedDownloadableFilePart> fileParts = Collections.synchronizedList(new ArrayList<>());
     private final AtomicInteger unsavedPartsCount = new AtomicInteger(0);
 
-    private final List<IDownloadableFilePart> fileParts = new ArrayList<>();
+    private volatile boolean fileSaved = false;
+    private volatile boolean errorHappened = false;
 
     public DownloadableFile(@NotNull String locator, @NotNull File outputDir, int maxThreadCount) {
         this.locator = locator;
@@ -46,29 +46,28 @@ public class DownloadableFile implements IDownloadableFileInt {
 
     @NotNull
     @Override
-    public DownloadStatus getStatus() {
+    public synchronized FileDownloadState getStatus() {
         if (fileSaved) {
             return DONE;
         } else if (errorHappened) {
-            return ERROR;
+            return FAILED;
         } else if (getDownloadableParts().isEmpty()) {
             return INITIATED;
         } else {
             boolean isDownloading = false;
-            boolean isSuspended = false;
-            boolean isPaused = false;
+            boolean isPaused = false; //TODO: intermediate status "pausing". And check statuses in general
             boolean isDone = true;
             for (IDownloadableFilePart part: getDownloadableParts()) {
-                final DownloadStatus status = part.getStatus();
-                if (status != DONE) {
+                final FilePartDownloadState status = part.getStatus();
+                if (status != FilePartDownloadState.DONE) {
                     isDone = false;
-                    if (status == ERROR || status == CANCELLED) {
-                        return status;
-                    } else if (status == DOWNLOADING) {
+                    if (status == FilePartDownloadState.FAILED) {
+                        return FAILED;
+                    } else if (status == FilePartDownloadState.CANCELLED) {
+                        return CANCELLED;
+                    } else if (status == FilePartDownloadState.DOWNLOADING) {
                         isDownloading = true;
-                    } else if (status == SUSPENDED) {
-                        isSuspended = true;
-                    } else if (status == PAUSED || status == PAUSE_CONFIRMED) {
+                    } else if (status == FilePartDownloadState.PAUSE_REQUESTED || status == FilePartDownloadState.PAUSED) {
                         isPaused = true;
                     }
                 }
@@ -79,8 +78,6 @@ public class DownloadableFile implements IDownloadableFileInt {
                 return DOWNLOADING;
             else if (isPaused)
                 return PAUSED;
-            else if (isSuspended)
-                return SUSPENDED;
             else
                 return PENDING;
         }
@@ -88,7 +85,10 @@ public class DownloadableFile implements IDownloadableFileInt {
 
     @Override
     public int getActiveThreadCount() {
-        return (int) getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count();
+        return (int) getDownloadableParts().stream()
+                .map(IDownloadableFilePart::getStatus)
+                .filter(FilePartDownloadState.DOWNLOADING::equals)
+                .count();
     }
 
     @Override
@@ -105,23 +105,29 @@ public class DownloadableFile implements IDownloadableFileInt {
     }
 
     @Override
-    public synchronized void pause() {
-        getDownloadableParts().stream().forEach(IDownloadableFilePart::pause);
+    public synchronized boolean pause() {
+        return getDownloadableParts().stream()
+                .map(IDownloadableFilePart::pause)
+                .reduce((b1, b2) -> b1 & b2)
+                .orElse(false);
     }
 
     @Override
-    public synchronized void cancel() {
-        getDownloadableParts().stream().forEach(IDownloadableFilePart::cancel);
+    public synchronized boolean cancel() {
+        return getDownloadableParts().stream()
+                .map(IDownloadableFilePart::cancel)
+                .reduce((b1, b2) -> b1 & b2)
+                .orElse(false);
     }
 
     @NotNull
     @Override
-    public List<IDownloadableFilePart> getDownloadableParts() {
-        return Collections.unmodifiableList(fileParts);
+    public Collection<IManagedDownloadableFilePart> getDownloadableParts() {
+        return Collections.unmodifiableList(fileParts); //FIXME: ugly construction. Ordering is not obvious
     }
 
     @Override
-    public synchronized void addPart(@NotNull IDownloadableFilePartInt part) {
+    public synchronized void addPart(@NotNull IManagedDownloadableFilePart part) {
         fileParts.add(part);
         unsavedPartsCount.incrementAndGet();
     }

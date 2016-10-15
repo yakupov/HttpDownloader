@@ -1,13 +1,14 @@
 package org.iyakupov.downloader.core.comms.impl;
 
 import org.iyakupov.downloader.core.comms.CommunicationStatus;
-import org.iyakupov.downloader.core.comms.ICommunicationAlgorithm;
-import org.iyakupov.downloader.core.comms.ICommunicationComponent;
+import org.iyakupov.downloader.core.comms.ICommunication;
+import org.iyakupov.downloader.core.comms.ICommunicatingComponent;
 import org.iyakupov.downloader.core.comms.ICommunicationResult;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.dispatch.TaskPriority;
-import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
+import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFile;
 import org.iyakupov.downloader.core.file.internal.impl.DownloadableFilePart;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,14 +19,21 @@ import java.nio.file.Files;
 /**
  * Algorithm that sends HTTP HEAD to server, obtains file size and checks, whether partial download is possible.
  */
-public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAlgorithm {
-    private final static Logger logger = LoggerFactory.getLogger(HttpPartDownloadCommunicationAlgorithm.class);
+public class HttpDownloadCheckCommunication implements ICommunication {
+    private final Logger logger = LoggerFactory.getLogger(HttpPartDownloadCommunication.class);
 
+    @NotNull
     private final IDispatchingQueue dispatcher;
-    private final ICommunicationComponent comm;
-    private final IDownloadableFileInt file;
 
-    public HttpDownloadCheckCommunicationAlgorithm(IDispatchingQueue dispatcher, ICommunicationComponent comm, IDownloadableFileInt file) {
+    @NotNull
+    private final ICommunicatingComponent comm;
+
+    @NotNull
+    private final IManagedDownloadableFile file;
+
+    public HttpDownloadCheckCommunication(@NotNull IDispatchingQueue dispatcher,
+                                          @NotNull ICommunicatingComponent comm,
+                                          @NotNull IManagedDownloadableFile file) {
         this.dispatcher = dispatcher;
         this.comm = comm;
         this.file = file;
@@ -33,7 +41,7 @@ public class HttpDownloadCheckCommunicationAlgorithm implements ICommunicationAl
 
     @Override
     public int getPriority() {
-        return TaskPriority.NEW_CHECK.getPriority();
+        return TaskPriority.NEW_CHECK.getNumericValue();
     }
 
     @Override

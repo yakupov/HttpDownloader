@@ -1,8 +1,8 @@
 package org.iyakupov.downloader.core.dispatch;
 
 import org.iyakupov.downloader.core.file.IDownloadableFile;
-import org.iyakupov.downloader.core.file.internal.IDownloadableFileInt;
-import org.iyakupov.downloader.core.file.internal.IDownloadableFilePartInt;
+import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFile;
+import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFilePart;
 
 import java.io.Closeable;
 import java.io.File;
@@ -13,27 +13,20 @@ import java.util.Collection;
  */
 public interface IDispatchingQueue extends Closeable {
     /**
-     * Get the parent file for this downloadable part
+     * Submit file part download resume with high numericValue
      *
-     * @param part Download task
-     * @return Parent file
-     */
-    IDownloadableFileInt getParentFile(IDownloadableFilePartInt part);
-
-    /**
-     * Submit file part download resume with high priority
-     *
+     * @param file Parent file for this downloadable part
      * @param part Resumed download task
      */
-    void submitEvictedTask(IDownloadableFilePartInt part);
+    void reSubmitEvictedTask(IManagedDownloadableFile file, IManagedDownloadableFilePart part);
 
     /**
-     * Submit file part download with normal priority
+     * Submit file part download with normal numericValue
      *
      * @param file Parent file for this downloadable part
      * @param part Downloadable part (part download task)
      */
-    void submitNewTask(IDownloadableFileInt file, IDownloadableFilePartInt part);
+    void submitNewTask(IManagedDownloadableFile file, IManagedDownloadableFilePart part);
 
     /**
      * Sets the maximal number of download worker threads

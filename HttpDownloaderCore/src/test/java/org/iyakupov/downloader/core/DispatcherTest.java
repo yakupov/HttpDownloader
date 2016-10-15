@@ -4,12 +4,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.iyakupov.downloader.core.comms.CommunicationStatus;
-import org.iyakupov.downloader.core.comms.ICommunicationComponent;
+import org.iyakupov.downloader.core.comms.ICommunicatingComponent;
 import org.iyakupov.downloader.core.comms.impl.HttpCommunicationResult;
-import org.iyakupov.downloader.core.comms.impl.HttpPartDownloadCommunicationAlgorithm;
+import org.iyakupov.downloader.core.comms.impl.HttpPartDownloadCommunication;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.dispatch.impl.DispatchingQueue;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
+import org.iyakupov.downloader.core.file.state.FileDownloadState;
+import org.iyakupov.downloader.core.file.state.FilePartDownloadState;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
@@ -24,7 +26,6 @@ import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.iyakupov.downloader.core.DownloadStatus.*;
 import static org.iyakupov.downloader.core.comms.CommunicationStatus.PARTIAL_CONTENT_OK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -43,10 +44,10 @@ public class DispatcherTest {
     /**
      * Real world-emulating input stream
      */
-    static class SleepyByteArrayInputStream extends ByteArrayInputStream {
+    private static class SleepyByteArrayInputStream extends ByteArrayInputStream {
         private final int delay;
 
-        public SleepyByteArrayInputStream(byte[] buf, int delay) {
+        SleepyByteArrayInputStream(byte[] buf, int delay) {
             super(buf);
             this.delay = delay;
         }
@@ -89,7 +90,7 @@ public class DispatcherTest {
                                                CommunicationStatus partDownloadRc,
                                                int readDelay,
                                                int defaultDispatcherThreadPoolSize) {
-        final ICommunicationComponent communicationComponent = mock(ICommunicationComponent.class);
+        final ICommunicatingComponent communicationComponent = mock(ICommunicatingComponent.class);
         when(communicationComponent.checkRemoteFile(any()))
                 .thenReturn(new HttpCommunicationResult(checkRc, "Irrelevant", null, chunkSize * expectedNumberOfChunks));
 
@@ -126,8 +127,8 @@ public class DispatcherTest {
      */
 
     @NotNull
-    final File outputDir = new File("target/ut_temp_dir/");
-    IDispatchingQueue dispatcher;
+    private final File outputDir = new File("target/ut_temp_dir/");
+    private IDispatchingQueue dispatcher;
 
     @Before
     public void ensureCleanTempDir() {
@@ -177,13 +178,14 @@ public class DispatcherTest {
             safeSleep(100);
 
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
-        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(DONE), is(PENDING), is(DOWNLOADING))));
+        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
+                anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PENDING), is(FilePartDownloadState.DOWNLOADING))));
 
-        while (file1.getStatus() != DONE)
+        while (file1.getStatus() != FileDownloadState.DONE)
             safeSleep(100);
 
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
-        file1.getDownloadableParts().forEach(p -> assertEquals(DONE, p.getStatus()));
+        file1.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.DONE, p.getStatus()));
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
     }
 
@@ -206,9 +208,10 @@ public class DispatcherTest {
 
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
 
-        while (file1.getStatus() != DONE) {
-            file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(DONE), is(PENDING), is(DOWNLOADING))));
-            final long downloadingPartsCount = file1.getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count();
+        while (file1.getStatus() != FileDownloadState.DONE) {
+            file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
+                    anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PENDING), is(FilePartDownloadState.DOWNLOADING))));
+            final long downloadingPartsCount = file1.getDownloadableParts().stream().filter(p -> p.getStatus() == FilePartDownloadState.DOWNLOADING).count();
             if (downloadingPartsCount > numberOfThreads) {
                 logger.warn("Mismatch between the current number of downloading tasks (" + downloadingPartsCount +
                         ") and expected one (" + numberOfThreads + "). Please check the logs if there are " +
@@ -218,7 +221,7 @@ public class DispatcherTest {
         }
 
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
-        file1.getDownloadableParts().forEach(p -> assertEquals(DONE, p.getStatus()));
+        file1.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.DONE, p.getStatus()));
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
     }
 
@@ -242,14 +245,16 @@ public class DispatcherTest {
 
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
         assertEquals(downloadablePartsPerFile, file2.getDownloadableParts().size());
-        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(DONE), is(PENDING), is(DOWNLOADING))));
-        file2.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(DONE), is(PENDING), is(DOWNLOADING))));
+        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
+                anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PENDING), is(FilePartDownloadState.DOWNLOADING))));
+        file2.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
+                anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PENDING), is(FilePartDownloadState.DOWNLOADING))));
 
-        while (file1.getStatus() != DONE)
+        while (file1.getStatus() != FileDownloadState.DONE)
             safeSleep(100);
 
-        file1.getDownloadableParts().forEach(p -> assertEquals(DONE, p.getStatus()));
-        file2.getDownloadableParts().forEach(p -> assertEquals(DONE, p.getStatus()));
+        file1.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.DONE, p.getStatus()));
+        file2.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.DONE, p.getStatus()));
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
         assertEquals(chunkSize * downloadablePartsPerFile, file2.getOutputFile().length());
     }
@@ -275,13 +280,15 @@ public class DispatcherTest {
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
         assertEquals(downloadablePartsPerFile, file2.getDownloadableParts().size());
 
-        while (file1.getStatus() != DONE || file2.getStatus() != DONE) {
-            file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(DONE), is(PENDING), is(DOWNLOADING))));
-            file2.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(DONE), is(PENDING), is(DOWNLOADING))));
+        while (file1.getStatus() != FileDownloadState.DONE || file2.getStatus() != FileDownloadState.DONE) {
+            file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
+                    anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PENDING), is(FilePartDownloadState.DOWNLOADING))));
+            file2.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
+                    anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PENDING), is(FilePartDownloadState.DOWNLOADING))));
 
             final long downloadingPartsCount =
-                    file1.getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count() +
-                            file2.getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count();
+                    file1.getDownloadableParts().stream().filter(p -> p.getStatus() == FilePartDownloadState.DOWNLOADING).count() +
+                            file2.getDownloadableParts().stream().filter(p -> p.getStatus() == FilePartDownloadState.DOWNLOADING).count();
             if (downloadingPartsCount > numberOfThreads) {
                 logger.warn("Mismatch between the current number of downloading tasks (" + downloadingPartsCount +
                         ") and expected one (" + numberOfThreads + "). Please check the logs if there are " +
@@ -290,8 +297,8 @@ public class DispatcherTest {
             safeSleep(100);
         }
 
-        file1.getDownloadableParts().forEach(p -> assertEquals(DONE, p.getStatus()));
-        file2.getDownloadableParts().forEach(p -> assertEquals(DONE, p.getStatus()));
+        file1.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.DONE, p.getStatus()));
+        file2.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.DONE, p.getStatus()));
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
         assertEquals(chunkSize * downloadablePartsPerFile, file2.getOutputFile().length());
     }
@@ -301,7 +308,7 @@ public class DispatcherTest {
         final int numberOfThreads = 20;
         final int newNumberOfThreads = 1;
         final int downloadablePartsPerFile = 3;
-        final int chunkSize = 5 * HttpPartDownloadCommunicationAlgorithm.BUFFER_SIZE; //5 reads
+        final int chunkSize = 5 * HttpPartDownloadCommunication.BUFFER_SIZE; //5 reads
         final int readDelay = 1000;
         final int allowedDelaysForASingleIteration = 1000;
 
@@ -319,7 +326,8 @@ public class DispatcherTest {
         // Wait to start download of each part. We expect to start them 'simultaneously', a long time before any of the
         // tasks may complete all five reads (100 ms to sleep << 5000 ms for 5 reads)
         long counter;
-        while ((counter = file1.getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count()) < downloadablePartsPerFile) {
+        while ((counter = file1.getDownloadableParts().stream()
+                .filter(p -> p.getStatus() == FilePartDownloadState.DOWNLOADING).count()) < downloadablePartsPerFile) {
             logger.trace("Not enough downloading parts: " + counter);
             safeSleep(300);
         }
@@ -327,9 +335,11 @@ public class DispatcherTest {
         dispatcher.setThreadPoolSize(newNumberOfThreads, true);
         safeSleep(readDelay + allowedDelaysForASingleIteration); //ensure completion of a read operation
 
-        while (file1.getStatus() != DONE) {
-            file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(DONE), is(SUSPENDED), is(DOWNLOADING))));
-            final long downloadingPartsCount = file1.getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count();
+        while (file1.getStatus() != FileDownloadState.DONE) {
+            file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
+                    anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.SUSPEND_REQUESTED),
+                            is(FilePartDownloadState.PENDING), is(FilePartDownloadState.DOWNLOADING))));
+            final long downloadingPartsCount = file1.getDownloadableParts().stream().filter(p -> p.getStatus() == FilePartDownloadState.DOWNLOADING).count();
             if (downloadingPartsCount > numberOfThreads) {
                 logger.warn("Mismatch between the current number of downloading tasks (" + downloadingPartsCount +
                         ") and expected one (" + numberOfThreads + "). Please check the logs if there are " +
@@ -339,7 +349,7 @@ public class DispatcherTest {
         }
 
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
-        file1.getDownloadableParts().forEach(p -> assertEquals(DONE, p.getStatus()));
+        file1.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.DONE, p.getStatus()));
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
     }
 
@@ -348,7 +358,7 @@ public class DispatcherTest {
         final int numberOfThreads = 20;
         final int newNumberOfThreads = 1;
         final int downloadablePartsPerFile = 3;
-        final int chunkSize = 3 * HttpPartDownloadCommunicationAlgorithm.BUFFER_SIZE; //5 reads
+        final int chunkSize = 3 * HttpPartDownloadCommunication.BUFFER_SIZE; //5 reads
         final int readDelay = 1000;
 
         dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
@@ -364,21 +374,24 @@ public class DispatcherTest {
 
         // Wait to start download of each part. We expect to start them 'simultaneously', a long time before any of the
         // tasks may complete all five reads (100 ms to sleep << 3000 ms for 3 reads)
-        while (file1.getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count() < downloadablePartsPerFile)
+        while (file1.getDownloadableParts().stream()
+                .filter(p -> p.getStatus() == FilePartDownloadState.DOWNLOADING).count() < downloadablePartsPerFile)
             safeSleep(100);
 
         dispatcher.setThreadPoolSize(newNumberOfThreads, true);
 
         final IDownloadableFile file2 = dispatcher.submitFile("http://a.b/file2.dmp", outputDir, downloadablePartsPerFile);
-        assertEquals(INITIATED, file2.getStatus());
+        assertEquals(FileDownloadState.INITIATED, file2.getStatus());
 
-        while (file1.getStatus() != DONE || file2.getStatus() != DONE) {
-            if (file2.getStatus() != INITIATED) {
-                assert (file1.getStatus() == DONE || file1.getStatus() == UNSAVED);
-                assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().stream().filter(p -> p.getStatus() == DONE).count());
+        while (file1.getStatus() != FileDownloadState.DONE|| file2.getStatus() != FileDownloadState.DONE) {
+            if (file2.getStatus() != FileDownloadState.INITIATED) {
+                assert (file1.getStatus() == FileDownloadState.DONE || file1.getStatus() == FileDownloadState.UNSAVED);
+                assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().stream().filter(p -> p.getStatus() == FilePartDownloadState.DONE).count());
             } else {
-                file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(DONE), is(SUSPENDED), is(DOWNLOADING))));
-                final long downloadingPartsCount = file2.getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count();
+                file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
+                        anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.SUSPEND_REQUESTED),
+                                is(FilePartDownloadState.PENDING), is(FilePartDownloadState.DOWNLOADING))));
+                final long downloadingPartsCount = file2.getDownloadableParts().stream().filter(p -> p.getStatus() == FilePartDownloadState.DOWNLOADING).count();
                 if (downloadingPartsCount > numberOfThreads) {
                     logger.warn("Mismatch between the current number of downloading tasks (" + downloadingPartsCount +
                             ") and expected one (" + newNumberOfThreads + "). Please check the logs if there are " +
@@ -388,8 +401,8 @@ public class DispatcherTest {
             safeSleep(100);
         }
 
-        file1.getDownloadableParts().forEach(p -> assertEquals(DONE, p.getStatus()));
-        file2.getDownloadableParts().forEach(p -> assertEquals(DONE, p.getStatus()));
+        file1.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.DONE, p.getStatus()));
+        file2.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.DONE, p.getStatus()));
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
         assertEquals(chunkSize * downloadablePartsPerFile, file2.getOutputFile().length());
     }
@@ -399,7 +412,7 @@ public class DispatcherTest {
         final int numberOfThreads = 1;
         final int newNumberOfThreads = 20;
         final int downloadablePartsPerFile = 3;
-        final int chunkSize = 5 * HttpPartDownloadCommunicationAlgorithm.BUFFER_SIZE; //5 reads
+        final int chunkSize = 5 * HttpPartDownloadCommunication.BUFFER_SIZE; //5 reads
         final int readDelay = 1000;
 
         dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
@@ -413,23 +426,25 @@ public class DispatcherTest {
             safeSleep(100);
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
 
-        while (file1.getStatus() != DOWNLOADING)
+        while (file1.getStatus() != FileDownloadState.DOWNLOADING)
             safeSleep(100);
-        assertEquals(numberOfThreads, file1.getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count());
-        assertEquals(downloadablePartsPerFile - numberOfThreads, file1.getDownloadableParts().stream().filter(p -> p.getStatus() == PENDING).count());
+        assertEquals(numberOfThreads, file1.getDownloadableParts().stream()
+                .filter(p -> p.getStatus() == FilePartDownloadState.DOWNLOADING).count());
+        assertEquals(downloadablePartsPerFile - numberOfThreads, file1.getDownloadableParts().stream()
+                .filter(p -> p.getStatus() == FilePartDownloadState.PENDING).count());
 
         dispatcher.setThreadPoolSize(newNumberOfThreads, true);
 
         // We expect the Thread Pool to allocate enough threads to process all parts 'simultaneously' a long time
         // before the tasks may complete all five reads (100 ms to sleep << 5000 ms for 5 reads)
-        while (file1.getDownloadableParts().stream().filter(p -> p.getStatus() == DOWNLOADING).count() < downloadablePartsPerFile)
+        while (file1.getDownloadableParts().stream().filter(p -> p.getStatus() == FilePartDownloadState.DOWNLOADING).count() < downloadablePartsPerFile)
             safeSleep(100);
 
-        while (file1.getStatus() != DONE)
+        while (file1.getStatus() != FileDownloadState.DONE)
             safeSleep(100);
 
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
-        file1.getDownloadableParts().forEach(p -> assertEquals(DONE, p.getStatus()));
+        file1.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.DONE, p.getStatus()));
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
     }
 
@@ -451,14 +466,15 @@ public class DispatcherTest {
             safeSleep(100);
 
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
-        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(DONE), is(PENDING), is(DOWNLOADING))));
+        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
+                anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PENDING), is(FilePartDownloadState.DOWNLOADING))));
 
         file1.cancel();
-        while (file1.getStatus() != CANCELLED)
+        while (file1.getStatus() != FileDownloadState.CANCELLED)
             safeSleep(100);
 
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
-        file1.getDownloadableParts().forEach(p -> assertEquals(CANCELLED, p.getStatus()));
+        file1.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.CANCELLED, p.getStatus()));
     }
 
     @Test(timeout = 20000)
@@ -479,21 +495,23 @@ public class DispatcherTest {
             safeSleep(100);
 
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
-        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(DONE), is(PENDING), is(DOWNLOADING))));
+        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
+                anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PENDING), is(FilePartDownloadState.DOWNLOADING))));
 
         file1.pause();
-        while (file1.getStatus() != PAUSED)
+        while (file1.getStatus() != FileDownloadState.PAUSED)
             safeSleep(100);
-
-        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(DONE), is(PAUSED))));
+        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
+                anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PAUSED), is(FilePartDownloadState.PAUSE_REQUESTED))));
+        //FIXME: at least this TC is stupid. It seems just to check the logic of file.getStatus()
 
         dispatcher.resumeDownload(file1);
 
-        while (file1.getStatus() != DONE)
+        while (file1.getStatus() != FileDownloadState.DONE)
             safeSleep(100);
 
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
-        file1.getDownloadableParts().forEach(p -> assertEquals(DONE, p.getStatus()));
+        file1.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.DONE, p.getStatus()));
         assertEquals(chunkSize * downloadablePartsPerFile, file1.getOutputFile().length());
     }
 
@@ -518,7 +536,7 @@ public class DispatcherTest {
 
         assertEquals(0, dispatcher.getAllFiles().size());
         assertEquals(downloadablePartsPerFile, file1.getDownloadableParts().size());
-        file1.getDownloadableParts().forEach(p -> assertEquals(CANCELLED, p.getStatus()));
-        assertEquals(CANCELLED, file1.getStatus());
+        file1.getDownloadableParts().forEach(p -> assertEquals(FilePartDownloadState.CANCELLED, p.getStatus()));
+        assertEquals(FileDownloadState.CANCELLED, file1.getStatus());
     }
 }

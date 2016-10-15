@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * Internal interface of a downloadable file part.
  * It's methods should be called from the Dispatcher or from a Communication Algorithm.
  */
-public interface IDownloadableFilePartInt extends IDownloadableFilePart {
+public interface IManagedDownloadableFilePart extends IDownloadableFilePart {
     /**
      * Set actual download speed of this chunk
      *
@@ -17,11 +17,13 @@ public interface IDownloadableFilePartInt extends IDownloadableFilePart {
 
     /**
      * Set the status of DONE to this download request
+     *
+     * @return Whether the status was changed. If not - possibly because the status was changed by another thread.
      */
-    void completeSuccessfully();
+    boolean completeSuccessfully();
 
     /**
-     * Set the status ERROR and store the error message
+     * Set the status FAILED and store the error message
      *
      * @param errorText Error message
      */
@@ -50,8 +52,9 @@ public interface IDownloadableFilePartInt extends IDownloadableFilePart {
      * If total length is already known (i.e. positive), this method won't do anything.
      *
      * @param length Actual length
+     * @return Whether the length was updated
      */
-    void updateTotalLength(long length);
+    boolean updateTotalLength(long length);
 
     /**
      * @return Whether the server supports partial downloads
@@ -64,17 +67,30 @@ public interface IDownloadableFilePartInt extends IDownloadableFilePart {
     void setDownloadResumeNotSupported();
 
     /**
-     * Automatically suspend task because of the shortage of available threads
+     * Make the task that was requested to be suspended ready to proceed with download.
+     *
+     * @return Whether the restart was successful
      */
-    void suspend();
+    boolean confirmSuspendAndRestart();
 
     /**
-     * Set the status of PENDING to this task
+     * Forcefully pause the download.
+     *
+     * @return Whether the status was changed. If not - possibly because the status was changed by another thread.
      */
-    void resumeDownload();
+    boolean suspend();
 
     /**
-     * Set the status of PAUSE_CONFIRMED instead of PAUSED
+     * Make this task ready for download (set the status of PENDING)
+     *
+     * @return Whether the status was changed. If not - possibly because the status was changed by another thread.
      */
-    void confirmPause();
+    boolean resume();
+
+    /**
+     * Confirm that the download was halted for this task, if the pause was previously requested
+     *
+     * @return Whether the status was changed. If not - possibly because the status was changed by another thread.
+     */
+    boolean confirmPause();
 }

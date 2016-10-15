@@ -12,7 +12,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
 import org.iyakupov.downloader.core.comms.CommunicationStatus;
-import org.iyakupov.downloader.core.comms.ICommunicationComponent;
+import org.iyakupov.downloader.core.comms.ICommunicatingComponent;
 import org.iyakupov.downloader.core.comms.ICommunicationResult;
 import org.iyakupov.downloader.core.exceptions.BadLocatorException;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ import java.net.URL;
 /**
  * Downloads files via HTTP
  */
-public class HttpCommunicationComponent implements ICommunicationComponent {
+public class HttpCommunicatingComponent implements ICommunicatingComponent {
     public static final int DEFAULT_MAX_CONNECTIONS = 200;
     public static final int DEFAULT_CONN_RQ_TIMEOUT = 6000;
     public static final int DEFAULT_CONN_TIMEOUT = 6000;
@@ -37,11 +37,11 @@ public class HttpCommunicationComponent implements ICommunicationComponent {
     private final CloseableHttpClient httpClient;
     private final RequestConfig httpRequestConfig;
 
-    public HttpCommunicationComponent() {
+    public HttpCommunicatingComponent() {
         this(DEFAULT_MAX_CONNECTIONS, DEFAULT_CONN_RQ_TIMEOUT, DEFAULT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
     }
 
-    public HttpCommunicationComponent(int maxConnections, int rqTimeout, int connTimeout, int socketTimeout) {
+    public HttpCommunicatingComponent(int maxConnections, int rqTimeout, int connTimeout, int socketTimeout) {
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(maxConnections);
         connectionManager.setDefaultMaxPerRoute(maxConnections);

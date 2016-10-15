@@ -1,6 +1,6 @@
 package org.iyakupov.downloader.core.file;
 
-import org.iyakupov.downloader.core.DownloadStatus;
+import org.iyakupov.downloader.core.file.state.FilePartDownloadState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,7 +16,7 @@ public interface IDownloadableFilePart {
     int getDownloadSpeed();
 
     @NotNull
-    DownloadStatus getStatus();
+    FilePartDownloadState getStatus();
 
     /**
      * @return Percentage of the file that was already downloaded, possible values: [0, 1]
@@ -25,12 +25,14 @@ public interface IDownloadableFilePart {
 
     /**
      * Manually pause this download.
+     *
+     * @return Whether the status was changed. If not - possibly because the status was changed by another thread.
      */
-    void pause();
+    boolean pause();
 
-    void start();
+    boolean start();
 
-    void cancel();
+    boolean cancel();
 
     @Nullable
     String getErrorText();

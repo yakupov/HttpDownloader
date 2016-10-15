@@ -11,10 +11,10 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.iyakupov.downloader.core.DownloadStatus;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.dispatch.impl.DispatchingQueue;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
+import org.iyakupov.downloader.core.file.state.FileDownloadState;
 import org.iyakupov.downloader.gui.new_download.DownloadRequest;
 import org.iyakupov.downloader.gui.new_download.NewDownloadController;
 import org.iyakupov.downloader.gui.settings.ISettingsModel;
@@ -206,7 +206,7 @@ public class MainController implements Initializable, Closeable {
         }
 
         selectedFiles.stream()
-                .filter(f -> f.getStatus() == DownloadStatus.PAUSED || f.getStatus() == DownloadStatus.ERROR)
+                .filter(f -> f.getStatus() == FileDownloadState.PAUSED || f.getStatus() == FileDownloadState.FAILED)
                 .forEach(dispatcher::resumeDownload);
 
         if (logger.isDebugEnabled()) {

@@ -9,13 +9,13 @@ public enum TaskPriority {
     PAUSED_TASK(20),
     EVICTED_TASK(100);
 
-    final int priority;
+    final int numericValue;
 
-    TaskPriority(int priority) {
-        this.priority = priority;
+    TaskPriority(int numericValue) {
+        this.numericValue = numericValue;
     }
 
-    public int getPriority() {
-        return priority;
+    public int getNumericValue() {
+        return numericValue;
     }
 }
