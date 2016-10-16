@@ -4,7 +4,7 @@ import org.iyakupov.downloader.core.file.state.FileDownloadState;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * This interface represents a file download request.
@@ -54,7 +54,7 @@ public interface IDownloadableFile {
      * @return Ordered list of downloadable pieces of this file.
      */
     @NotNull
-    Collection<? extends IDownloadableFilePart> getDownloadableParts();
+    List<? extends IDownloadableFilePart> getDownloadableParts();
 
      /**
      * @return {@link File} that points to the point where this file should be stored.

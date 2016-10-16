@@ -1,10 +1,8 @@
 package org.iyakupov.downloader.core.file.internal;
 
 import org.iyakupov.downloader.core.file.IDownloadableFile;
-import org.iyakupov.downloader.core.file.IDownloadableFilePart;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -43,5 +41,5 @@ public interface IManagedDownloadableFile extends IDownloadableFile {
      */
     @NotNull
     @Override
-    Collection<IManagedDownloadableFilePart> getDownloadableParts();
+    List<IManagedDownloadableFilePart> getDownloadableParts();
 }

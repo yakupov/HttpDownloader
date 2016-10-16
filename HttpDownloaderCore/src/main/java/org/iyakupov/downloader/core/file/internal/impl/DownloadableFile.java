@@ -1,19 +1,20 @@
 package org.iyakupov.downloader.core.file.internal.impl;
 
-import com.google.common.collect.Sets;
 import org.apache.commons.io.FilenameUtils;
-import org.iyakupov.downloader.core.file.state.FileDownloadState;
-import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFile;
 import org.iyakupov.downloader.core.file.IDownloadableFilePart;
+import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFile;
 import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFilePart;
+import org.iyakupov.downloader.core.file.state.FileDownloadState;
 import org.iyakupov.downloader.core.file.state.FilePartDownloadState;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.iyakupov.downloader.core.file.state.FileDownloadState.*;
+import static org.iyakupov.downloader.core.file.state.FileDownloadState.DONE;
+import static org.iyakupov.downloader.core.file.state.FileDownloadState.FAILED;
 
 /**
  * File download request default implementation
@@ -23,12 +24,17 @@ public class DownloadableFile implements IManagedDownloadableFile {
     private final File outputFile;
     private final int maxThreadCount;
 
-    private final List<IManagedDownloadableFilePart> fileParts = Collections.synchronizedList(new ArrayList<>());
+    private final List<IManagedDownloadableFilePart> fileParts = new ArrayList<>();
     private final AtomicInteger unsavedPartsCount = new AtomicInteger(0);
 
     private volatile boolean fileSaved = false;
     private volatile boolean errorHappened = false;
 
+    /**
+     * @param locator        Pointer to a remote file. URL, for example
+     * @param outputDir      Path to the directory where the file should be stored
+     * @param maxThreadCount In how many pieces should the file be cut
+     */
     public DownloadableFile(@NotNull String locator, @NotNull File outputDir, int maxThreadCount) {
         this.locator = locator;
         if (!outputDir.isDirectory()) {
@@ -46,40 +52,39 @@ public class DownloadableFile implements IManagedDownloadableFile {
 
     @NotNull
     @Override
-    public synchronized FileDownloadState getStatus() {
+    public FileDownloadState getStatus() {
         if (fileSaved) {
             return DONE;
         } else if (errorHappened) {
             return FAILED;
-        } else if (getDownloadableParts().isEmpty()) {
-            return INITIATED;
         } else {
-            boolean isDownloading = false;
-            boolean isPaused = false; //TODO: intermediate status "pausing". And check statuses in general
-            boolean isDone = true;
-            for (IDownloadableFilePart part: getDownloadableParts()) {
-                final FilePartDownloadState status = part.getStatus();
-                if (status != FilePartDownloadState.DONE) {
-                    isDone = false;
-                    if (status == FilePartDownloadState.FAILED) {
-                        return FAILED;
-                    } else if (status == FilePartDownloadState.CANCELLED) {
-                        return CANCELLED;
-                    } else if (status == FilePartDownloadState.DOWNLOADING) {
-                        isDownloading = true;
-                    } else if (status == FilePartDownloadState.PAUSE_REQUESTED || status == FilePartDownloadState.PAUSED) {
-                        isPaused = true;
-                    }
-                }
-            }
-            if (isDone)
-                return UNSAVED;
-            if (isDownloading)
-                return DOWNLOADING;
-            else if (isPaused)
-                return PAUSED;
-            else
-                return PENDING;
+            return getDownloadableParts().stream()
+                    .map(IDownloadableFilePart::getStatus)
+                    .distinct()
+                    .reduce(FileDownloadState.INITIATED,
+                            (fileDownloadState, filePartDownloadState) -> {
+                                switch (filePartDownloadState) {
+                                    case CANCELLED:
+                                        return fileDownloadState.onCancelled();
+                                    case DONE:
+                                        return fileDownloadState.onCompleted();
+                                    case DOWNLOADING:
+                                        return fileDownloadState.onDownloading();
+                                    case FAILED:
+                                        return fileDownloadState.onError();
+                                    case PAUSE_REQUESTED:
+                                        return fileDownloadState.onPauseRequested();
+                                    case PAUSED:
+                                        return fileDownloadState.onPaused();
+                                    case PENDING:
+                                        return fileDownloadState.onPending();
+                                    case SUSPEND_REQUESTED:
+                                        return fileDownloadState.onSuspendRequested();
+                                    default:
+                                        return fileDownloadState;
+                                }
+                            },
+                            (s1, s2) -> s1.getPriority() > s2.getPriority() ? s1 : s2);
         }
     }
 
@@ -106,7 +111,7 @@ public class DownloadableFile implements IManagedDownloadableFile {
 
     @Override
     public synchronized boolean pause() {
-        return getDownloadableParts().stream()
+        return fileParts.stream()
                 .map(IDownloadableFilePart::pause)
                 .reduce((b1, b2) -> b1 & b2)
                 .orElse(false);
@@ -114,16 +119,19 @@ public class DownloadableFile implements IManagedDownloadableFile {
 
     @Override
     public synchronized boolean cancel() {
-        return getDownloadableParts().stream()
+        return fileParts.stream()
                 .map(IDownloadableFilePart::cancel)
                 .reduce((b1, b2) -> b1 & b2)
                 .orElse(false);
     }
 
+    /**
+     * @return A copied list of this file's parts. Thread-safe.
+     */
     @NotNull
     @Override
-    public Collection<IManagedDownloadableFilePart> getDownloadableParts() {
-        return Collections.unmodifiableList(fileParts); //FIXME: ugly construction. Ordering is not obvious
+    public synchronized List<IManagedDownloadableFilePart> getDownloadableParts() {
+        return new ArrayList<>(fileParts);
     }
 
     @Override
@@ -171,7 +179,6 @@ public class DownloadableFile implements IManagedDownloadableFile {
 
         final DownloadableFile that = (DownloadableFile) o;
         return locator.equals(that.locator);
-
     }
 
     @Override
@@ -187,7 +194,7 @@ public class DownloadableFile implements IManagedDownloadableFile {
                 ", maxThreadCount=" + maxThreadCount +
                 ", fileSaved=" + fileSaved +
                 ", errorHappened=" + errorHappened +
-                ", partsCount=" + getDownloadableParts().size() +
+                ", partsCount=" + fileParts.size() +
                 ", status=" + getStatus() +
                 '}';
     }

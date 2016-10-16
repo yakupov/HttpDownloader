@@ -479,7 +479,7 @@ public class DispatcherTest {
 
     @Test(timeout = 20000)
     public void testOneFilePauseResume() throws IOException {
-        final int chunkSize = 1000;
+        final int chunkSize = 5000;
         final int numberOfThreads = 20;
         final int downloadablePartsPerFile = 3;
         final int readDelay = 1000;
@@ -499,14 +499,13 @@ public class DispatcherTest {
                 anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PENDING), is(FilePartDownloadState.DOWNLOADING))));
 
         file1.pause();
-        while (file1.getStatus() != FileDownloadState.PAUSED)
-            safeSleep(100);
-        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(),
-                anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PAUSED), is(FilePartDownloadState.PAUSE_REQUESTED))));
-        //FIXME: at least this TC is stupid. It seems just to check the logic of file.getStatus()
+        while (file1.getStatus() != FileDownloadState.PAUSED) {
+            logger.debug("Wait until all parts will halt. Current file status: " + file1.getStatus());
+            safeSleep(300);
+        }
+        file1.getDownloadableParts().forEach(p -> assertThat(p.getStatus(), anyOf(is(FilePartDownloadState.DONE), is(FilePartDownloadState.PAUSED))));
 
         dispatcher.resumeDownload(file1);
-
         while (file1.getStatus() != FileDownloadState.DONE)
             safeSleep(100);
 

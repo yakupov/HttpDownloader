@@ -89,6 +89,14 @@ public class DispatchingQueue implements IDispatchingQueue {
         executor.setCorePoolSize(newSize);
         executor.setMaximumPoolSize(newSize);
 
+        //FIXME: it looks like we can't properly increase the pool size, need to test & fix
+        /*
+           Reproduce on 1 file:
+             1) maxThreads = 5, parts = 15
+             2) Set maxThreads = 20
+             3) There are only 8 active parts
+         */
+
         final int activeCount = executor.getActiveCount();
         int tasksToEvict = activeCount - newSize;
         if (tasksToEvict > 0) {
@@ -167,6 +175,9 @@ public class DispatchingQueue implements IDispatchingQueue {
 
     @Override
     public synchronized boolean resumeDownload(IDownloadableFile file) {
+        //FIXME: if file save has failed, but the download has finished,
+        //resume() breaks everything. It downloads more data (duplicate) and does not assemble the output file
+
         if (file.getStatus() == FileDownloadState.PAUSED ||
                 file.getStatus() == FileDownloadState.FAILED && file.getDownloadableParts().size() > 0) {
             logger.debug("Resuming download of file " + file.getOutputFile());

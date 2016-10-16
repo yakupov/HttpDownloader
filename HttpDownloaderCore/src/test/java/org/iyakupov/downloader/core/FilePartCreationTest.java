@@ -15,9 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -63,13 +60,7 @@ public class FilePartCreationTest {
         downloadCheckAlgorithm.run();
         verify(dispatchingQueue, times(expectedPartsCount)).submitNewTask(any(), any());
 
-        final List<IManagedDownloadableFilePart> parts = new ArrayList<>(downloadableFile.getDownloadableParts());
-        Collections.sort(parts, new Comparator<IManagedDownloadableFilePart>() {
-            @Override
-            public int compare(IManagedDownloadableFilePart o1, IManagedDownloadableFilePart o2) {
-                return o1.getOutputFile().getName().compareTo(o2.getOutputFile().getName()); //FIXME: stupid test
-            }
-        });
+        final List<IManagedDownloadableFilePart> parts = downloadableFile.getDownloadableParts();
         assertEquals(expectedPartsCount, parts.size());
         assertEquals(new File(outputDir, fileName), downloadableFile.getOutputFile());
         for (int i = 0; i < expectedPartsCount; ++i) {
