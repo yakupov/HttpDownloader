@@ -1,6 +1,7 @@
 package org.iyakupov.downloader.core.file.internal;
 
 import org.iyakupov.downloader.core.file.IDownloadableFilePart;
+import org.iyakupov.downloader.core.file.state.FilePartLengthState;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -40,6 +41,11 @@ public interface IManagedDownloadableFilePart extends IDownloadableFilePart {
     long getRemainingLength();
 
     /**
+     * @return Whether we know the remaining length of the file.
+     */
+    FilePartLengthState getLengthState();
+
+    /**
      * Increment the internal counter of downloaded bytes.
      * This counter is used for calculation of the current start position.
      *
@@ -50,6 +56,10 @@ public interface IManagedDownloadableFilePart extends IDownloadableFilePart {
     /**
      * Sets total length of this chunk if it's unknown yet (e.g. was not returned in the initial HEAD request).
      * If total length is already known (i.e. positive), this method won't do anything.
+     *
+     * Contract: the first call to this method returns true if the length was not defined upon
+     * construction of this file part. {@link IManagedDownloadableFilePart#getLengthState}
+     * may not return {@link FilePartLengthState#YET_UNKNOWN} for this part after this call.
      *
      * @param length Actual length
      * @return Whether the length was updated

@@ -51,7 +51,7 @@ public class HttpCommunicationResult implements ICommunicationResult {
      * @return Data stream.
      * IMPORTANT. This stream is managed by the HttpClient. Closing it explicitly will harm the performance.
      *
-     * @throws IOException
+     * @throws IOException In case of any problems in HttpClient
      */
     @Nullable
     @Override
@@ -68,7 +68,7 @@ public class HttpCommunicationResult implements ICommunicationResult {
         return size;
     }
 
-    public static Builder builder() {
+    static Builder builder() {
         return new Builder();
     }
 
@@ -78,33 +78,33 @@ public class HttpCommunicationResult implements ICommunicationResult {
             httpResponse.close();
     }
 
-    public static class Builder {
+    static class Builder {
         private CommunicationStatus communicationStatus;
         private String message;
         private CloseableHttpResponse httpResponse;
         private long size;
 
-        public Builder setCommunicationStatus(CommunicationStatus communicationStatus) {
+        Builder setCommunicationStatus(CommunicationStatus communicationStatus) {
             this.communicationStatus = communicationStatus;
             return this;
         }
 
-        public Builder setMessage(String message) {
+        Builder setMessage(String message) {
             this.message = message;
             return this;
         }
 
-        public Builder setHttpResponse(CloseableHttpResponse httpResponse) {
+        Builder setHttpResponse(CloseableHttpResponse httpResponse) {
             this.httpResponse = httpResponse;
             return this;
         }
 
-        public Builder setSize(long size) {
+        Builder setSize(long size) {
             this.size = size;
             return this;
         }
 
-        public HttpCommunicationResult createHttpCommunicationResult() {
+        HttpCommunicationResult createHttpCommunicationResult() {
             return new HttpCommunicationResult(communicationStatus, message, httpResponse, size);
         }
     }

@@ -160,6 +160,11 @@ public class DownloadableFile implements IManagedDownloadableFile {
         return unsavedPartsCount.decrementAndGet();
     }
 
+    @Override
+    public int getNonSuccessfullyDownloadedPartsCount() {
+        return unsavedPartsCount.get();
+    }
+
     @NotNull
     @Override
     public File getOutputFile() {

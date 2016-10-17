@@ -2,6 +2,7 @@ package org.iyakupov.downloader.core.file.internal.impl;
 
 import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFilePart;
 import org.iyakupov.downloader.core.file.state.FilePartDownloadState;
+import org.iyakupov.downloader.core.file.state.FilePartLengthState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,15 +25,24 @@ public class DownloadableFilePart implements IManagedDownloadableFilePart {
     private volatile int downloadSpeed = 0;
     private volatile String errorText = null;
 
-    private AtomicReference<FilePartDownloadState> status = new AtomicReference<>(PENDING);
-    private AtomicLong downloadedBytesCount = new AtomicLong(0);
-    private AtomicLong length;
+    //Current state of this download request
+    private final AtomicReference<FilePartDownloadState> status = new AtomicReference<>(PENDING);
+    private final AtomicLong downloadedBytesCount = new AtomicLong(0);
+    private volatile FilePartLengthState lengthState;
+    private volatile long length;
 
+    /**
+     * @param outputFile Path to temporary file on the (local) FS
+     * @param locator    URL or something else that points to the remote file
+     * @param start      Index of the first byte to download
+     * @param length     Length of this part. Non-positive values mean "unknown"
+     */
     public DownloadableFilePart(File outputFile, String locator, long start, long length) {
         this.outputFile = outputFile;
         this.locator = locator;
         this.start = start;
-        this.length = new AtomicLong(length);
+        this.length = length;
+        this.lengthState = length <= 0 ? FilePartLengthState.YET_UNKNOWN : FilePartLengthState.KNOWN;
     }
 
     @Override
@@ -53,10 +63,10 @@ public class DownloadableFilePart implements IManagedDownloadableFilePart {
 
     @Override
     public double getProgress() {
-        if (length.get() <= 0) {
+        if (lengthState != FilePartLengthState.KNOWN) {
             return 0;
         } else {
-            return (double) downloadedBytesCount.get() / length.get();
+            return (double) downloadedBytesCount.get() / length;
         }
     }
 
@@ -152,10 +162,15 @@ public class DownloadableFilePart implements IManagedDownloadableFilePart {
 
     @Override
     public long getRemainingLength() {
-        if (length.get() < 0)
+        if (lengthState != FilePartLengthState.KNOWN)
             return -1;
         else
-            return length.get() - downloadedBytesCount.get();
+            return length - downloadedBytesCount.get();
+    }
+
+    @Override
+    public FilePartLengthState getLengthState() {
+        return lengthState;
     }
 
     @Override
@@ -164,9 +179,13 @@ public class DownloadableFilePart implements IManagedDownloadableFilePart {
     }
 
     @Override
-    public boolean updateTotalLength(long newLength) {
-        final long prevLength = length.get();
-        return prevLength < 0 && length.compareAndSet(prevLength, newLength);
+    public synchronized boolean updateTotalLength(long newLength) {
+        if (lengthState == FilePartLengthState.YET_UNKNOWN) {
+            lengthState = newLength <= 0 ? FilePartLengthState.UNKNOWN : FilePartLengthState.KNOWN;
+            length = newLength;
+            return true;
+        }
+        return false;
     }
 
     @Override

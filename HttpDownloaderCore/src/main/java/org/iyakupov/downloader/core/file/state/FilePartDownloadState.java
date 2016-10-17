@@ -3,7 +3,6 @@ package org.iyakupov.downloader.core.file.state;
 /**
  * The status of a file part download request
  */
-//TODO: validate this state machine
 public enum FilePartDownloadState {
     /**
      * Ready to proceed with download

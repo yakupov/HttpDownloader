@@ -37,7 +37,6 @@ public interface ICommunicationResult extends Closeable {
      * or stores it in memory, null will be returned.
      *
      * @return Response data stream.
-     * @throws IOException
      */
     @Nullable
     InputStream getResponseDataStream() throws IOException;

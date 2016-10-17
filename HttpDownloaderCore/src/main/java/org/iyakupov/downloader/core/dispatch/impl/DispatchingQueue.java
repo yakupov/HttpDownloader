@@ -1,6 +1,7 @@
 package org.iyakupov.downloader.core.dispatch.impl;
 
 import com.google.common.collect.Sets;
+import org.iyakupov.downloader.core.AppSettings;
 import org.iyakupov.downloader.core.file.state.FileDownloadState;
 import org.iyakupov.downloader.core.comms.ICommunication;
 import org.iyakupov.downloader.core.comms.ICommunicatingComponent;
@@ -29,8 +30,6 @@ import java.util.concurrent.*;
  * Queued thread pool, designed to process file download requests
  */
 public class DispatchingQueue implements IDispatchingQueue {
-    public final static int DEFAULT_QUEUE_CAPACITY = 1000;
-
     private final Logger logger = LoggerFactory.getLogger(DispatchingQueue.class);
 
     private final Set<IManagedDownloadableFile> knownFiles = Sets.newConcurrentHashSet(); //concurrent for getAllFiles to work
@@ -39,11 +38,13 @@ public class DispatchingQueue implements IDispatchingQueue {
     private final ICommunicatingComponent communicationComponent;
 
     public DispatchingQueue(int maxNumberOfThreads) {
-        this(maxNumberOfThreads, DEFAULT_QUEUE_CAPACITY);
+        this(maxNumberOfThreads, AppSettings.getDispatchingQueueCapacity());
     }
 
     private DispatchingQueue(int maxNumberOfThreads, int queueCapacity) {
-        this(maxNumberOfThreads, queueCapacity, new HttpCommunicatingComponent());
+        this(maxNumberOfThreads, queueCapacity, new HttpCommunicatingComponent(
+                AppSettings.getHttpMaxConnections(), AppSettings.getHttpConnRqTimeout(),
+                AppSettings.getHttpConnTimeout(), AppSettings.getHttpSocketTimeout()));
     }
 
     public DispatchingQueue(int maxNumberOfThreads, int queueCapacity, ICommunicatingComponent communicationComponent) {
@@ -85,24 +86,23 @@ public class DispatchingQueue implements IDispatchingQueue {
 
     @Override
     public synchronized void setThreadPoolSize(int newSize, boolean evictNonResumable) {
-        logger.info("Set new core and max pool size: " + newSize);
+        logger.info("Setting new core and max pool size: " + newSize);
         executor.setCorePoolSize(newSize);
         executor.setMaximumPoolSize(newSize);
+        executor.prestartAllCoreThreads();
 
-        //FIXME: it looks like we can't properly increase the pool size, need to test & fix
-        /*
-           Reproduce on 1 file:
-             1) maxThreads = 5, parts = 15
-             2) Set maxThreads = 20
-             3) There are only 8 active parts
-         */
+        logger.debug("New pool size: " + executor.getPoolSize());
+        logger.debug("New largest pool size: " + executor.getLargestPoolSize());
+        logger.debug("New max pool size: " + executor.getMaximumPoolSize());
+        logger.debug("New core pool size: " + executor.getCorePoolSize());
+        logger.debug("Active count: " + executor.getActiveCount());
 
         final int activeCount = executor.getActiveCount();
         int tasksToEvict = activeCount - newSize;
         if (tasksToEvict > 0) {
             logger.debug("Current active thread count: " + activeCount + ", tasks to evict: " + tasksToEvict);
             tasksToEvict = suspendSomeTasks(tasksToEvict, false);
-            if (tasksToEvict > 0)
+            if (tasksToEvict > 0 && evictNonResumable)
                 suspendSomeTasks(tasksToEvict, true);
         }
     }
@@ -110,13 +110,13 @@ public class DispatchingQueue implements IDispatchingQueue {
     /**
      * Forcefully pause some tasks
      *
-     * @param tasksToEvict Number of tasks to suspend
+     * @param tasksToEvict      Number of tasks to suspend
      * @param evictNonResumable Whether to suspend tasks where download resume is not possible
      * @return Remaining number of tasks to evict
      */
     private synchronized int suspendSomeTasks(int tasksToEvict, boolean evictNonResumable) {
-        for (IManagedDownloadableFile file: knownFiles) {
-            for (IManagedDownloadableFilePart part: file.getDownloadableParts()) {
+        for (IManagedDownloadableFile file : knownFiles) {
+            for (IManagedDownloadableFilePart part : file.getDownloadableParts()) {
                 if (part.getStatus() == FilePartDownloadState.DOWNLOADING &&
                         (part.isDownloadResumeSupported() || evictNonResumable)) {
                     if (tasksToEvict-- <= 0)
@@ -175,9 +175,6 @@ public class DispatchingQueue implements IDispatchingQueue {
 
     @Override
     public synchronized boolean resumeDownload(IDownloadableFile file) {
-        //FIXME: if file save has failed, but the download has finished,
-        //resume() breaks everything. It downloads more data (duplicate) and does not assemble the output file
-
         if (file.getStatus() == FileDownloadState.PAUSED ||
                 file.getStatus() == FileDownloadState.FAILED && file.getDownloadableParts().size() > 0) {
             logger.debug("Resuming download of file " + file.getOutputFile());
@@ -188,11 +185,11 @@ public class DispatchingQueue implements IDispatchingQueue {
             file.getDownloadableParts().stream()
                     .filter(p -> p.getStatus() == FilePartDownloadState.PAUSED || p.getStatus() == FilePartDownloadState.FAILED)
                     .forEach(p -> {
-                        final IManagedDownloadableFilePart partInt = (IManagedDownloadableFilePart) p;
-                        partInt.resume();
+                        final IManagedDownloadableFilePart managedPart = (IManagedDownloadableFilePart) p;
+                        managedPart.resume();
                         logger.debug("Resuming part " + p.getOutputFile());
                         executor.execute(new HttpPartDownloadCommunication(
-                                TaskPriority.PAUSED_TASK, this, communicationComponent, (IManagedDownloadableFile) file, partInt));
+                                TaskPriority.PAUSED_TASK, this, communicationComponent, (IManagedDownloadableFile) file, managedPart));
                     });
             return true;
         } else {

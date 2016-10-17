@@ -6,7 +6,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.iyakupov.downloader.core.comms.CommunicationStatus;
 import org.iyakupov.downloader.core.comms.ICommunicatingComponent;
 import org.iyakupov.downloader.core.comms.impl.HttpCommunicationResult;
-import org.iyakupov.downloader.core.comms.impl.HttpPartDownloadCommunication;
 import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.dispatch.impl.DispatchingQueue;
 import org.iyakupov.downloader.core.file.IDownloadableFile;
@@ -118,7 +117,7 @@ public class DispatcherTest {
             return new HttpCommunicationResult(partDownloadRc, "Irrelevant", response, res.length);
         });
 
-        return new DispatchingQueue(defaultDispatcherThreadPoolSize, DispatchingQueue.DEFAULT_QUEUE_CAPACITY, communicationComponent);
+        return new DispatchingQueue(defaultDispatcherThreadPoolSize, AppSettings.getDispatchingQueueCapacity(), communicationComponent);
     }
 
 
@@ -191,7 +190,7 @@ public class DispatcherTest {
 
     @Test(timeout = 20000)
     public void testOneFileNotEnoughThreads() throws IOException {
-        final int chunkSize = 1000;
+        final int chunkSize = 2 * AppSettings.getDownloadBufferSize();
         final int numberOfThreads = 1;
         final int downloadablePartsPerFile = 3;
         final int readDelay = 1000;
@@ -308,7 +307,7 @@ public class DispatcherTest {
         final int numberOfThreads = 20;
         final int newNumberOfThreads = 1;
         final int downloadablePartsPerFile = 3;
-        final int chunkSize = 5 * HttpPartDownloadCommunication.BUFFER_SIZE; //5 reads
+        final int chunkSize = 5 * AppSettings.getDownloadBufferSize(); //5 reads
         final int readDelay = 1000;
         final int allowedDelaysForASingleIteration = 1000;
 
@@ -358,7 +357,7 @@ public class DispatcherTest {
         final int numberOfThreads = 20;
         final int newNumberOfThreads = 1;
         final int downloadablePartsPerFile = 3;
-        final int chunkSize = 3 * HttpPartDownloadCommunication.BUFFER_SIZE; //5 reads
+        final int chunkSize = 3 * AppSettings.getDownloadBufferSize(); //5 reads
         final int readDelay = 1000;
 
         dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
@@ -412,7 +411,7 @@ public class DispatcherTest {
         final int numberOfThreads = 1;
         final int newNumberOfThreads = 20;
         final int downloadablePartsPerFile = 3;
-        final int chunkSize = 5 * HttpPartDownloadCommunication.BUFFER_SIZE; //5 reads
+        final int chunkSize = 5 * AppSettings.getDownloadBufferSize(); //5 reads
         final int readDelay = 1000;
 
         dispatcher = createDispatcher(chunkSize, downloadablePartsPerFile,
@@ -450,7 +449,7 @@ public class DispatcherTest {
 
     @Test(timeout = 15000)
     public void testOneFileCancel() throws IOException {
-        final int chunkSize = 1000;
+        final int chunkSize = 3 * AppSettings.getDownloadBufferSize();
         final int numberOfThreads = 20;
         final int downloadablePartsPerFile = 3;
         final int readDelay = 1000;
@@ -479,7 +478,7 @@ public class DispatcherTest {
 
     @Test(timeout = 20000)
     public void testOneFilePauseResume() throws IOException {
-        final int chunkSize = 5000;
+        final int chunkSize = 3 * AppSettings.getDownloadBufferSize();
         final int numberOfThreads = 20;
         final int downloadablePartsPerFile = 3;
         final int readDelay = 1000;

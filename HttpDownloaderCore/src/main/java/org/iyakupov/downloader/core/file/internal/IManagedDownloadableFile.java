@@ -37,6 +37,12 @@ public interface IManagedDownloadableFile extends IDownloadableFile {
     int decrementAndGetNonSuccessfullyDownloadedPartsCount();
 
     /**
+     * @return Count of the parts of the file that are not downloaded yet, or have statuses of FAILED or CANCELLED.
+     */
+    int getNonSuccessfullyDownloadedPartsCount();
+
+
+    /**
      * @return Ordered list of downloadable pieces of this file.
      */
     @NotNull

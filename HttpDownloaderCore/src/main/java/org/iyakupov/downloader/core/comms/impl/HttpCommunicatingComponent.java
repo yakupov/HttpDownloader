@@ -27,19 +27,10 @@ import java.net.URL;
  * Downloads files via HTTP
  */
 public class HttpCommunicatingComponent implements ICommunicatingComponent {
-    public static final int DEFAULT_MAX_CONNECTIONS = 200;
-    public static final int DEFAULT_CONN_RQ_TIMEOUT = 6000;
-    public static final int DEFAULT_CONN_TIMEOUT = 6000;
-    public static final int DEFAULT_SOCKET_TIMEOUT = 30000;
-
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final CloseableHttpClient httpClient;
     private final RequestConfig httpRequestConfig;
-
-    public HttpCommunicatingComponent() {
-        this(DEFAULT_MAX_CONNECTIONS, DEFAULT_CONN_RQ_TIMEOUT, DEFAULT_CONN_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
-    }
 
     public HttpCommunicatingComponent(int maxConnections, int rqTimeout, int connTimeout, int socketTimeout) {
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();

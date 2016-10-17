@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 import static org.iyakupov.downloader.core.file.state.FileDownloadState.*;
-import static org.iyakupov.downloader.core.file.state.FileDownloadState.FAILED;
 import static org.iyakupov.downloader.core.comms.CommunicationStatus.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
