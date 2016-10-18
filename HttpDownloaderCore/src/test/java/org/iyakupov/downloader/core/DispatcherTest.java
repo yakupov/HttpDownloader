@@ -36,10 +36,6 @@ import static org.mockito.Mockito.*;
 public class DispatcherTest {
     private final static Logger logger = LoggerFactory.getLogger(FilePartDownloadTest.class);
 
-    /*
-     * UTILS
-     */
-
     /**
      * Real world-emulating input stream
      */
@@ -119,7 +115,6 @@ public class DispatcherTest {
 
         return new DispatchingQueue(defaultDispatcherThreadPoolSize, AppSettings.getDispatchingQueueCapacity(), communicationComponent);
     }
-
 
     /*
      * TESTS

@@ -106,7 +106,7 @@ public class HttpPartDownloadCommunication implements ICommunication {
                         final byte[] buffer = new byte[AppSettings.getDownloadBufferSize()];
                         int lastRead;
 
-                        while ((lastRead = responseDataStream.read(buffer)) > 0) {
+                        while ((lastRead = responseDataStream.read(buffer)) > 0) { //Timeout is set in the HTTP client
                             if (filePart.getLengthState() == FilePartLengthState.KNOWN && lastRead > filePart.getRemainingLength())
                                 logger.warn("End of file was expected (basing on content-length), but the stream " +
                                         "has not ended. Continuing download...");
@@ -204,12 +204,9 @@ public class HttpPartDownloadCommunication implements ICommunication {
         try (OutputStream outputFileStream = new FileOutputStream(file.getOutputFile())) {
             for (IDownloadableFilePart part : file.getDownloadableParts()) {
                 logger.debug("Copy data from " + part.getOutputFile() + " to " + file.getOutputFile());
-
-                //TODO: Create a new file if exists, maybe
                 Files.copy(part.getOutputFile().toPath(), outputFileStream);
                 Files.delete(part.getOutputFile().toPath());
             }
-
             file.markAsSaved();
         }
     }

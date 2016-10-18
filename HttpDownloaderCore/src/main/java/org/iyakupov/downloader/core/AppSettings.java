@@ -16,6 +16,7 @@ public class AppSettings {
 
     //Dispatcher
     private static volatile int dispatchingQueueCapacity = 1000;
+    private static volatile boolean overwriteOutputFile = false;
 
     public static int getDownloadBufferSize() {
         return downloadBufferSize;
@@ -71,5 +72,13 @@ public class AppSettings {
 
     public static void setDispatchingQueueCapacity(int dispatchingQueueCapacity) {
         AppSettings.dispatchingQueueCapacity = dispatchingQueueCapacity;
+    }
+
+    public static boolean overwriteOutputFile() {
+        return overwriteOutputFile;
+    }
+
+    public static void setOverwriteOutputFile(boolean overwriteOutputFile) {
+        AppSettings.overwriteOutputFile = overwriteOutputFile;
     }
 }

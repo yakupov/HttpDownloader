@@ -151,9 +151,9 @@ public class DispatchingQueue implements IDispatchingQueue {
         return Collections.unmodifiableSet(knownFiles);
     }
 
-    //TODO: cancellation should be thread-safe, maybe don't need sync. Possible issues with knownFiles
+    //Thread-safe because CANCELLED is a terminal state.
     @Override
-    public synchronized boolean forgetFile(IDownloadableFile file) {
+    public boolean forgetFile(IDownloadableFile file) {
         if (fileIsKnown(file)) {
             final boolean shouldCancel = file.getStatus() != FileDownloadState.DONE;
             //noinspection SuspiciousMethodCalls

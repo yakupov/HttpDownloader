@@ -8,6 +8,7 @@ import org.iyakupov.downloader.core.dispatch.IDispatchingQueue;
 import org.iyakupov.downloader.core.dispatch.TaskPriority;
 import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFile;
 import org.iyakupov.downloader.core.file.internal.impl.DownloadableFilePart;
+import org.iyakupov.downloader.core.file.state.FileDownloadState;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,11 @@ public class HttpDownloadCheckCommunication implements ICommunication {
             final int maxThreadCount = file.getMaxThreadCount();
             if (maxThreadCount > 1 && communicationResult.getResponseCode() == CommunicationStatus.PARTIAL_CONTENT_OK) {
                 final long chunkSize = communicationResult.getSize() / maxThreadCount;
+                if (chunkSize == 0) {
+                    logger.error("Number of bytes in the file is less than desired number of chunks. File: " + file);
+                    file.errorHappened();
+                    return;
+                }
                 for (int i = 0; i < maxThreadCount; ++i) {
                     logger.trace("Trying to add part " + i + " of " + maxThreadCount + "...");
                     final File outputFile = new File(file.getOutputFile().getAbsolutePath() + "_part" + i);
@@ -66,7 +72,7 @@ public class HttpDownloadCheckCommunication implements ICommunication {
                 }
             } else if (communicationResult.getResponseCode() == CommunicationStatus.PARTIAL_CONTENT_OK ||
                     communicationResult.getResponseCode() == CommunicationStatus.OK) { //single thread
-                Files.deleteIfExists(file.getOutputFile().toPath()); //TODO: think about generation of new file name
+                Files.deleteIfExists(file.getOutputFile().toPath());
                 final DownloadableFilePart part = new DownloadableFilePart(file.getOutputFile(), file.getLocator(), 0, -1);
                 if (communicationResult.getResponseCode() != CommunicationStatus.PARTIAL_CONTENT_OK) {
                     part.setDownloadResumeNotSupported();
@@ -80,6 +86,10 @@ public class HttpDownloadCheckCommunication implements ICommunication {
         } catch (IOException e) {
             logger.error("Failed to remove old temporary file", e);
             file.errorHappened();
+        } finally {
+            //If the file was cancelled before the tasks were created by this Communication
+            if (file.getStatus() == FileDownloadState.CANCELLED)
+                file.cancel();
         }
     }
 }

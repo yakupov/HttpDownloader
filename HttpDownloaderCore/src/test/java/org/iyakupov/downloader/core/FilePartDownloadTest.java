@@ -37,31 +37,32 @@ import static org.mockito.Mockito.*;
 /**
  * UT for HttpPartDownloadCommunication
  */
-//FIXME: this test of state machine (or WTF is this) seems too complicated/useless
-@SuppressWarnings("WeakerAccess") //TODO: remove suppression
 public class FilePartDownloadTest {
     private static class ExpectedState {
         @NotNull
         final CommunicationStatus communicationStatus;
+
         @NotNull
-        final FilePartDownloadState partStatus;
+        final FilePartDownloadState partStatusAfterThisStep;
+
         @NotNull
         final FileDownloadState fileStatusAfterThisStep;
+
         @Nullable
         final Consumer<IDownloadableFile> actionOnFile;
 
-        public ExpectedState(@NotNull CommunicationStatus communicationStatus,
-                             @NotNull FilePartDownloadState partStatus,
-                             @NotNull FileDownloadState fileStatusAfterThisStep) {
-            this(communicationStatus, partStatus, fileStatusAfterThisStep, null);
+        ExpectedState(@NotNull CommunicationStatus communicationStatus,
+                      @NotNull FilePartDownloadState partStatusAfterThisStep,
+                      @NotNull FileDownloadState fileStatusAfterThisStep) {
+            this(communicationStatus, partStatusAfterThisStep, fileStatusAfterThisStep, null);
         }
 
-        public ExpectedState(@NotNull CommunicationStatus communicationStatus,
-                             @NotNull FilePartDownloadState partStatus,
-                             @NotNull FileDownloadState fileStatusAfterThisStep,
-                             @Nullable Consumer<IDownloadableFile> actionOnFile) {
+        ExpectedState(@NotNull CommunicationStatus communicationStatus,
+                      @NotNull FilePartDownloadState partStatusAfterThisStep,
+                      @NotNull FileDownloadState fileStatusAfterThisStep,
+                      @Nullable Consumer<IDownloadableFile> actionOnFile) {
             this.communicationStatus = communicationStatus;
-            this.partStatus = partStatus;
+            this.partStatusAfterThisStep = partStatusAfterThisStep;
             this.fileStatusAfterThisStep = fileStatusAfterThisStep;
             this.actionOnFile = actionOnFile;
         }
@@ -80,8 +81,8 @@ public class FilePartDownloadTest {
      * @param fileSize       File size
      * @param expectedStates States. Number of states equals to the number of parts.
      */
-    public void testCommon(final int fileSize,
-                           final ExpectedState... expectedStates) {
+    private void testCommon(final int fileSize,
+                            @NotNull final ExpectedState... expectedStates) {
         final String fileName = "file.bin";
         final String fileUrl = "http://my.site/" + fileName;
 
@@ -97,9 +98,6 @@ public class FilePartDownloadTest {
         assertEquals(INITIATED, file.getStatus());
 
         final IDispatchingQueue dispatchingQueue = mock(IDispatchingQueue.class);
-       // doNothing().when(dispatchingQueue).reSubmitEvictedTask(any());
-       // when(dispatchingQueue.getParentFile(any())).thenReturn(file); //TODO: delete or rethink
-
         final IManagedDownloadableFilePart[] partsArray = new IManagedDownloadableFilePart[desiredPartsCount];
         for (int i = 0; i < desiredPartsCount; ++i) {
             final File outputFile = new File(file.getOutputFile().getAbsolutePath() + "_part" + i);
@@ -120,27 +118,26 @@ public class FilePartDownloadTest {
             logger.trace("Executing download of the part #" + i +
                     ", expected communication status is " + expectedStates[i].communicationStatus);
 
-            final ICommunicatingComponent communicationComponent = mock(ICommunicatingComponent.class);
-            when(communicationComponent.downloadRemoteFile(anyString(), anyLong(), anyLong()))
-                    .thenAnswer(createResponseGenerator(expectedStates[i].communicationStatus,
-                            i < desiredPartsCount - 1 ? chunkSize : chunkSize + fileSize % chunkSize));
+            final int currChunkSize = (i == desiredPartsCount - 1) ? chunkSize + fileSize % chunkSize : chunkSize;
 
-            final ICommunication communicationAlgorithm =
-                    new HttpPartDownloadCommunication(TaskPriority.NEW_PART_DOWNLOAD,
-                            dispatchingQueue, communicationComponent, file, partsArray[i]);
-            communicationAlgorithm.run();
+            final ICommunicatingComponent commComponent = mock(ICommunicatingComponent.class);
+            when(commComponent.downloadRemoteFile(anyString(), anyLong(), anyLong()))
+                    .thenAnswer(createResponseGenerator(expectedStates[i].communicationStatus, currChunkSize));
 
-            assertEquals(expectedStates[i].partStatus, partsArray[i].getStatus());
+            final ICommunication partDownloadCommunication = new HttpPartDownloadCommunication(
+                    TaskPriority.NEW_PART_DOWNLOAD, dispatchingQueue, commComponent, file, partsArray[i]);
+            partDownloadCommunication.run();
+
+            assertEquals(expectedStates[i].partStatusAfterThisStep, partsArray[i].getStatus());
             assertEquals(expectedStates[i].fileStatusAfterThisStep, file.getStatus());
             if (partsArray[i].getStatus() == FilePartDownloadState.DONE && i < desiredPartsCount - 1) {
                 assertEquals(chunkSize, partsArray[i].getOutputFile().length());
             }
 
-            if (expectedStates[i] != null) {
-                final ExpectedState currentState = expectedStates[i];
-                if (currentState != null && currentState.actionOnFile != null) {
-                    currentState.actionOnFile.accept(file);
-                }
+            if (expectedStates[i].actionOnFile != null) {
+                //bug in IDEA - NPE warning
+                //noinspection ConstantConditions
+                expectedStates[i].actionOnFile.accept(file);
             }
         }
 
@@ -272,5 +269,4 @@ public class FilePartDownloadTest {
                 new ExpectedState(PARTIAL_CONTENT_OK, FilePartDownloadState.DONE, DONE)
         );
     }
-
 }

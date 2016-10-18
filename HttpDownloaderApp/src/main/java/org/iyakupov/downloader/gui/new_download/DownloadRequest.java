@@ -11,7 +11,7 @@ public class DownloadRequest {
     private final String url;
     private final int numberOfThreads;
 
-    public DownloadRequest(@NotNull File outputDir, @NotNull String url, int numberOfThreads) {
+    DownloadRequest(@NotNull File outputDir, @NotNull String url, int numberOfThreads) {
         this.outputDir = outputDir;
         this.url = url;
         this.numberOfThreads = numberOfThreads;

@@ -1,6 +1,7 @@
 package org.iyakupov.downloader.core.file.internal.impl;
 
 import org.apache.commons.io.FilenameUtils;
+import org.iyakupov.downloader.core.AppSettings;
 import org.iyakupov.downloader.core.file.IDownloadableFilePart;
 import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFile;
 import org.iyakupov.downloader.core.file.internal.IManagedDownloadableFilePart;
@@ -11,8 +12,10 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.iyakupov.downloader.core.file.state.FileDownloadState.CANCELLED;
 import static org.iyakupov.downloader.core.file.state.FileDownloadState.DONE;
 import static org.iyakupov.downloader.core.file.state.FileDownloadState.FAILED;
 
@@ -26,9 +29,10 @@ public class DownloadableFile implements IManagedDownloadableFile {
 
     private final List<IManagedDownloadableFilePart> fileParts = new ArrayList<>();
     private final AtomicInteger unsavedPartsCount = new AtomicInteger(0);
+    private final AtomicBoolean fileSaved = new AtomicBoolean(false);
 
-    private volatile boolean fileSaved = false;
     private volatile boolean errorHappened = false;
+    private volatile boolean cancelled = false;
 
     /**
      * @param locator        Pointer to a remote file. URL, for example
@@ -40,8 +44,15 @@ public class DownloadableFile implements IManagedDownloadableFile {
         if (!outputDir.isDirectory()) {
             throw new IllegalArgumentException("The given path is not a directory: " + outputDir);
         }
+
         final String fileName = FilenameUtils.getName(locator);
-        this.outputFile = new File(outputDir, fileName);
+        File fsFile = new File(outputDir, fileName);
+        int i = 1;
+        while (fsFile.exists() && !AppSettings.overwriteOutputFile()) {
+            fsFile = new File(outputDir, fileName + " (" + i++ + ")");
+        }
+
+        this.outputFile = fsFile;
         this.maxThreadCount = maxThreadCount;
     }
 
@@ -53,10 +64,12 @@ public class DownloadableFile implements IManagedDownloadableFile {
     @NotNull
     @Override
     public FileDownloadState getStatus() {
-        if (fileSaved) {
+        if (fileSaved.get()) {
             return DONE;
         } else if (errorHappened) {
             return FAILED;
+        } else if (cancelled) {
+            return CANCELLED;
         } else {
             return getDownloadableParts().stream()
                     .map(IDownloadableFilePart::getStatus)
@@ -119,6 +132,7 @@ public class DownloadableFile implements IManagedDownloadableFile {
 
     @Override
     public synchronized boolean cancel() {
+        cancelled = true;
         return fileParts.stream()
                 .map(IDownloadableFilePart::cancel)
                 .reduce((b1, b2) -> b1 & b2)
@@ -142,11 +156,11 @@ public class DownloadableFile implements IManagedDownloadableFile {
 
     @Override
     public void markAsSaved() {
-        if (unsavedPartsCount.get() == 0) {
-            fileSaved = true;
-        } else {
+        if (unsavedPartsCount.get() != 0) {
             throw new IllegalStateException("Tried to mark file as saved, although there are " +
-                    unsavedPartsCount.get() + " parts that are not (yet) successfully downloaded");
+                    unsavedPartsCount.get() + " parts that are not (yet) successfully downloaded. File = " + this);
+        } else if (!fileSaved.compareAndSet(false, true)) {
+            throw new IllegalStateException("Tried to mark file as saved, although it's already saved. File = " + this);
         }
     }
 
@@ -197,7 +211,7 @@ public class DownloadableFile implements IManagedDownloadableFile {
                 "locator='" + locator + '\'' +
                 ", outputFile=" + outputFile +
                 ", maxThreadCount=" + maxThreadCount +
-                ", fileSaved=" + fileSaved +
+                ", fileSaved=" + fileSaved.get() +
                 ", errorHappened=" + errorHappened +
                 ", partsCount=" + fileParts.size() +
                 ", status=" + getStatus() +

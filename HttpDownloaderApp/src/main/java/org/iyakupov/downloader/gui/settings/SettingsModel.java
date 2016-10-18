@@ -21,7 +21,7 @@ public class SettingsModel implements ISettingsModel {
         return defaultOutputFolder;
     }
 
-    public void setDefaultOutputFolder(File defaultOutputFolder) {
+    void setDefaultOutputFolder(File defaultOutputFolder) {
         this.defaultOutputFolder = defaultOutputFolder;
     }
 
@@ -35,7 +35,7 @@ public class SettingsModel implements ISettingsModel {
         return totalNumberOfThreads;
     }
 
-    public void setTotalNumberOfThreads(int totalNumberOfThreads) {
+    void setTotalNumberOfThreads(int totalNumberOfThreads) {
         this.totalNumberOfThreads.set(totalNumberOfThreads);
     }
 
@@ -44,7 +44,7 @@ public class SettingsModel implements ISettingsModel {
         return defaultNumberOfThreadsPerFile;
     }
 
-    public void setDefaultNumberOfThreadsPerFile(int defaultNumberOfThreadsPerFile) {
+    void setDefaultNumberOfThreadsPerFile(int defaultNumberOfThreadsPerFile) {
         this.defaultNumberOfThreadsPerFile = defaultNumberOfThreadsPerFile;
     }
 }

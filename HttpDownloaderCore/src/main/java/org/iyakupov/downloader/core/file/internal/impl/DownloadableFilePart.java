@@ -20,16 +20,14 @@ public class DownloadableFilePart implements IManagedDownloadableFilePart {
     private final String locator;
     private final long start;
 
-    //These data elements are OK for publishing via race
+    //Current state of this download request
+    private final AtomicReference<FilePartDownloadState> status = new AtomicReference<>(PENDING);
+    private final AtomicReference<FilePartLengthState> lengthState;
+    private final AtomicLong downloadedBytesCount = new AtomicLong(0);
+    private volatile long length;
     private volatile boolean partialDownloadSupported = true;
     private volatile int downloadSpeed = 0;
     private volatile String errorText = null;
-
-    //Current state of this download request
-    private final AtomicReference<FilePartDownloadState> status = new AtomicReference<>(PENDING);
-    private final AtomicLong downloadedBytesCount = new AtomicLong(0);
-    private volatile FilePartLengthState lengthState;
-    private volatile long length;
 
     /**
      * @param outputFile Path to temporary file on the (local) FS
@@ -42,7 +40,9 @@ public class DownloadableFilePart implements IManagedDownloadableFilePart {
         this.locator = locator;
         this.start = start;
         this.length = length;
-        this.lengthState = length <= 0 ? FilePartLengthState.YET_UNKNOWN : FilePartLengthState.KNOWN;
+        this.lengthState = length <= 0
+                ? new AtomicReference<>(FilePartLengthState.YET_UNKNOWN)
+                : new AtomicReference<>(FilePartLengthState.KNOWN);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class DownloadableFilePart implements IManagedDownloadableFilePart {
 
     @Override
     public double getProgress() {
-        if (lengthState != FilePartLengthState.KNOWN) {
+        if (lengthState.get() != FilePartLengthState.KNOWN) {
             return 0;
         } else {
             return (double) downloadedBytesCount.get() / length;
@@ -162,7 +162,7 @@ public class DownloadableFilePart implements IManagedDownloadableFilePart {
 
     @Override
     public long getRemainingLength() {
-        if (lengthState != FilePartLengthState.KNOWN)
+        if (lengthState.get() != FilePartLengthState.KNOWN)
             return -1;
         else
             return length - downloadedBytesCount.get();
@@ -170,7 +170,7 @@ public class DownloadableFilePart implements IManagedDownloadableFilePart {
 
     @Override
     public FilePartLengthState getLengthState() {
-        return lengthState;
+        return lengthState.get();
     }
 
     @Override
@@ -179,9 +179,9 @@ public class DownloadableFilePart implements IManagedDownloadableFilePart {
     }
 
     @Override
-    public synchronized boolean updateTotalLength(long newLength) {
-        if (lengthState == FilePartLengthState.YET_UNKNOWN) {
-            lengthState = newLength <= 0 ? FilePartLengthState.UNKNOWN : FilePartLengthState.KNOWN;
+    public boolean updateTotalLength(long newLength) {
+        final FilePartLengthState newLengthState = newLength <= 0 ? FilePartLengthState.UNKNOWN : FilePartLengthState.KNOWN;
+        if (lengthState.compareAndSet(FilePartLengthState.YET_UNKNOWN, newLengthState)) {
             length = newLength;
             return true;
         }
